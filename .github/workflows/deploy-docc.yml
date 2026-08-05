@@ -1,0 +1,69 @@
+name: Deploy DocC to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Print Xcode version
+        run: xcodebuild -version
+
+      - name: Generate original assets
+        run: python3 Scripts/generate_assets.py
+
+      - name: Build DocC archive
+        run: |
+          xcodebuild docbuild \
+            -project PohangAirAR.xcodeproj \
+            -scheme PohangAirAR \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Transform archive for static hosting
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          ARCHIVE_PATH="$(find "$RUNNER_TEMP/DerivedData" -type d -name '*.doccarchive' -print -quit)"
+          if [[ -z "$ARCHIVE_PATH" ]]; then
+            echo "DocC archive를 찾지 못했습니다." >&2
+            exit 1
+          fi
+          REPOSITORY_NAME="${REPOSITORY#*/}"
+          xcrun docc process-archive transform-for-static-hosting "$ARCHIVE_PATH" \
+            --output-path "$RUNNER_TEMP/site" \
+            --hosting-base-path "$REPOSITORY_NAME"
+          touch "$RUNNER_TEMP/site/.nojekyll"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/site
+          include-hidden-files: true
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
