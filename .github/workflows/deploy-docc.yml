@@ -30,8 +30,8 @@ jobs:
       - name: Build DocC archive
         run: |
           xcodebuild docbuild \
-            -project PohangAirAR.xcodeproj \
-            -scheme PohangAirAR \
+            -project AirAR.xcodeproj \
+            -scheme AirAR \
             -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO

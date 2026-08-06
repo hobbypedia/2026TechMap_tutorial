@@ -1,0 +1,535 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* App/AirARApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000001 /* App/AirARApp.swift */; };
+		A00000000000000000000002 /* Models/AirQualitySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000002 /* Models/AirQualitySnapshot.swift */; };
+		A00000000000000000000003 /* Models/AirQualityAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000003 /* Models/AirQualityAPIResponse.swift */; };
+		A00000000000000000000004 /* Services/AirQualityServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000004 /* Services/AirQualityServiceProtocol.swift */; };
+		A00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift */; };
+		A00000000000000000000006 /* ViewModels/AirQualityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000006 /* ViewModels/AirQualityViewModel.swift */; };
+		A00000000000000000000007 /* AR/ARSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000007 /* AR/ARSessionState.swift */; };
+		A00000000000000000000008 /* AR/AirQualityVisualizationMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000008 /* AR/AirQualityVisualizationMapper.swift */; };
+		A00000000000000000000009 /* AR/simd_float4x4+Translation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000009 /* AR/simd_float4x4+Translation.swift */; };
+		A0000000000000000000000A /* AR/AirQualityEntityFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000A /* AR/AirQualityEntityFactory.swift */; };
+		A0000000000000000000000B /* AR/AirQualityARView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000B /* AR/AirQualityARView.swift */; };
+		A0000000000000000000000C /* Views/MetricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000C /* Views/MetricView.swift */; };
+		A0000000000000000000000D /* Views/AirQualityStatusPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000D /* Views/AirQualityStatusPanel.swift */; };
+		A0000000000000000000000E /* Views/ARControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000E /* Views/ARControlPanel.swift */; };
+		A0000000000000000000000F /* Views/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0000000000000000000000F /* Views/ContentView.swift */; };
+		A00000000000000000000010 /* Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000010 /* Resources/Assets.xcassets */; };
+		A00000000000000000000011 /* Documentation.docc in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000011 /* Documentation.docc */; };
+		A00000000000000000000012 /* Models/AirQualityLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000013 /* Models/AirQualityLevel.swift */; };
+		A00000000000000000000013 /* ViewModels/AirQualityMetricViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000014 /* ViewModels/AirQualityMetricViewModel.swift */; };
+		A00000000000000000000014 /* Models/UserLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000015 /* Models/UserLocation.swift */; };
+		A00000000000000000000015 /* Services/LocationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000016 /* Services/LocationServiceProtocol.swift */; };
+		A00000000000000000000016 /* Services/CoreLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000017 /* Services/CoreLocationService.swift */; };
+		A00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */; };
+		A00000000000000000000021 /* AirQualityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000021 /* AirQualityViewModelTests.swift */; };
+		A00000000000000000000022 /* AirQualityVisualizationMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */; };
+		A00000000000000000000023 /* AirQualityLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000023 /* AirQualityLevelTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D00000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 900000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 700000000000000000000001;
+			remoteInfo = AirAR;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F00000000000000000000001 /* AirARApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirARApp.swift; sourceTree = "<group>"; };
+		F00000000000000000000002 /* AirQualitySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualitySnapshot.swift; sourceTree = "<group>"; };
+		F00000000000000000000003 /* AirQualityAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityAPIResponse.swift; sourceTree = "<group>"; };
+		F00000000000000000000004 /* AirQualityServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityServiceProtocol.swift; sourceTree = "<group>"; };
+		F00000000000000000000005 /* OpenMeteoAirQualityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoAirQualityService.swift; sourceTree = "<group>"; };
+		F00000000000000000000006 /* AirQualityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityViewModel.swift; sourceTree = "<group>"; };
+		F00000000000000000000007 /* ARSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARSessionState.swift; sourceTree = "<group>"; };
+		F00000000000000000000008 /* AirQualityVisualizationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityVisualizationMapper.swift; sourceTree = "<group>"; };
+		F00000000000000000000009 /* simd_float4x4+Translation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "simd_float4x4+Translation.swift"; sourceTree = "<group>"; };
+		F0000000000000000000000A /* AirQualityEntityFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityEntityFactory.swift; sourceTree = "<group>"; };
+		F0000000000000000000000B /* AirQualityARView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityARView.swift; sourceTree = "<group>"; };
+		F0000000000000000000000C /* MetricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricView.swift; sourceTree = "<group>"; };
+		F0000000000000000000000D /* AirQualityStatusPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityStatusPanel.swift; sourceTree = "<group>"; };
+		F0000000000000000000000E /* ARControlPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARControlPanel.swift; sourceTree = "<group>"; };
+		F0000000000000000000000F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F00000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F00000000000000000000011 /* Documentation.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = Documentation.docc; sourceTree = "<group>"; };
+		F00000000000000000000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F00000000000000000000013 /* AirQualityLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityLevel.swift; sourceTree = "<group>"; };
+		F00000000000000000000014 /* AirQualityMetricViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityMetricViewModel.swift; sourceTree = "<group>"; };
+		F00000000000000000000015 /* UserLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserLocation.swift; sourceTree = "<group>"; };
+		F00000000000000000000016 /* LocationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationServiceProtocol.swift; sourceTree = "<group>"; };
+		F00000000000000000000017 /* CoreLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLocationService.swift; sourceTree = "<group>"; };
+		F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoAirQualityServiceTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000021 /* AirQualityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityViewModelTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityVisualizationMapperTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000023 /* AirQualityLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityLevelTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000100 /* AirAR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AirAR.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F00000000000000000000101 /* AirARTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirARTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B00000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B00000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		600000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				600000000000000000000002 /* AirAR */,
+				600000000000000000000003 /* AirARTests */,
+				600000000000000000000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		600000000000000000000002 /* AirAR */ = {
+			isa = PBXGroup;
+			children = (
+				600000000000000000000010 /* App */,
+				600000000000000000000011 /* Models */,
+				600000000000000000000012 /* Services */,
+				600000000000000000000013 /* ViewModels */,
+				600000000000000000000015 /* Views */,
+				600000000000000000000014 /* AR */,
+				600000000000000000000016 /* Resources */,
+				F00000000000000000000011 /* Documentation.docc */,
+				F00000000000000000000012 /* Info.plist */,
+			);
+			path = AirAR;
+			sourceTree = "<group>";
+		};
+		600000000000000000000003 /* AirARTests */ = {
+			isa = PBXGroup;
+			children = (
+				600000000000000000000020 /* Models */,
+				600000000000000000000021 /* Services */,
+				600000000000000000000022 /* ViewModels */,
+				600000000000000000000023 /* AR */,
+			);
+			path = AirARTests;
+			sourceTree = "<group>";
+		};
+		600000000000000000000010 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000001 /* AirARApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		600000000000000000000011 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000002 /* AirQualitySnapshot.swift */,
+				F00000000000000000000013 /* AirQualityLevel.swift */,
+				F00000000000000000000003 /* AirQualityAPIResponse.swift */,
+				F00000000000000000000015 /* UserLocation.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		600000000000000000000012 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000004 /* AirQualityServiceProtocol.swift */,
+				F00000000000000000000005 /* OpenMeteoAirQualityService.swift */,
+				F00000000000000000000016 /* LocationServiceProtocol.swift */,
+				F00000000000000000000017 /* CoreLocationService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		600000000000000000000013 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000006 /* AirQualityViewModel.swift */,
+				F00000000000000000000014 /* AirQualityMetricViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		600000000000000000000014 /* AR */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000007 /* ARSessionState.swift */,
+				F00000000000000000000008 /* AirQualityVisualizationMapper.swift */,
+				F00000000000000000000009 /* simd_float4x4+Translation.swift */,
+				F0000000000000000000000A /* AirQualityEntityFactory.swift */,
+				F0000000000000000000000B /* AirQualityARView.swift */,
+			);
+			path = AR;
+			sourceTree = "<group>";
+		};
+		600000000000000000000015 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F0000000000000000000000C /* MetricView.swift */,
+				F0000000000000000000000D /* AirQualityStatusPanel.swift */,
+				F0000000000000000000000E /* ARControlPanel.swift */,
+				F0000000000000000000000F /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		600000000000000000000016 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000010 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		600000000000000000000020 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000023 /* AirQualityLevelTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		600000000000000000000021 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		600000000000000000000022 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000021 /* AirQualityViewModelTests.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		600000000000000000000023 /* AR */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */,
+			);
+			path = AR;
+			sourceTree = "<group>";
+		};
+		600000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F00000000000000000000100 /* AirAR.app */,
+				F00000000000000000000101 /* AirARTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		700000000000000000000001 /* AirAR */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C00000000000000000000002 /* Build configuration list for PBXNativeTarget "AirAR" */;
+			buildPhases = (
+				500000000000000000000001 /* Sources */,
+				B00000000000000000000001 /* Frameworks */,
+				400000000000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AirAR;
+			productName = AirAR;
+			productReference = F00000000000000000000100 /* AirAR.app */;
+			productType = "com.apple.product-type.application";
+		};
+		700000000000000000000002 /* AirARTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C00000000000000000000003 /* Build configuration list for PBXNativeTarget "AirARTests" */;
+			buildPhases = (
+				500000000000000000000002 /* Sources */,
+				B00000000000000000000002 /* Frameworks */,
+				400000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D00000000000000000000002 /* PBXTargetDependency */,
+			);
+			name = AirARTests;
+			productName = AirARTests;
+			productReference = F00000000000000000000101 /* AirARTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		900000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					700000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					700000000000000000000002 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 700000000000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = C00000000000000000000001 /* Build configuration list for PBXProject "AirAR" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = ko;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ko,
+				en,
+				Base,
+			);
+			mainGroup = 600000000000000000000001;
+			productRefGroup = 600000000000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				700000000000000000000001 /* AirAR */,
+				700000000000000000000002 /* AirARTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		400000000000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000010 /* Resources/Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		400000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		500000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000001 /* App/AirARApp.swift in Sources */,
+				A00000000000000000000002 /* Models/AirQualitySnapshot.swift in Sources */,
+				A00000000000000000000012 /* Models/AirQualityLevel.swift in Sources */,
+				A00000000000000000000003 /* Models/AirQualityAPIResponse.swift in Sources */,
+				A00000000000000000000014 /* Models/UserLocation.swift in Sources */,
+				A00000000000000000000004 /* Services/AirQualityServiceProtocol.swift in Sources */,
+				A00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift in Sources */,
+				A00000000000000000000015 /* Services/LocationServiceProtocol.swift in Sources */,
+				A00000000000000000000016 /* Services/CoreLocationService.swift in Sources */,
+				A00000000000000000000006 /* ViewModels/AirQualityViewModel.swift in Sources */,
+				A00000000000000000000013 /* ViewModels/AirQualityMetricViewModel.swift in Sources */,
+				A00000000000000000000007 /* AR/ARSessionState.swift in Sources */,
+				A00000000000000000000008 /* AR/AirQualityVisualizationMapper.swift in Sources */,
+				A00000000000000000000009 /* AR/simd_float4x4+Translation.swift in Sources */,
+				A0000000000000000000000A /* AR/AirQualityEntityFactory.swift in Sources */,
+				A0000000000000000000000B /* AR/AirQualityARView.swift in Sources */,
+				A0000000000000000000000C /* Views/MetricView.swift in Sources */,
+				A0000000000000000000000D /* Views/AirQualityStatusPanel.swift in Sources */,
+				A0000000000000000000000E /* Views/ARControlPanel.swift in Sources */,
+				A0000000000000000000000F /* Views/ContentView.swift in Sources */,
+				A00000000000000000000011 /* Documentation.docc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		500000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift in Sources */,
+				A00000000000000000000021 /* AirQualityViewModelTests.swift in Sources */,
+				A00000000000000000000022 /* AirQualityVisualizationMapperTests.swift in Sources */,
+				A00000000000000000000023 /* AirQualityLevelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D00000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 700000000000000000000001 /* AirAR */;
+			targetProxy = D00000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		C10000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C10000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C10000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QF62GD89Z2;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AirAR/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirAR;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C10000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QF62GD89Z2;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AirAR/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirAR;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		C10000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirARTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AirAR.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AirAR";
+			};
+			name = Debug;
+		};
+		C10000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirARTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AirAR.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AirAR";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C00000000000000000000001 /* Build configuration list for PBXProject "AirAR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C10000000000000000000001 /* Debug */,
+				C10000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C00000000000000000000002 /* Build configuration list for PBXNativeTarget "AirAR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C10000000000000000000003 /* Debug */,
+				C10000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C00000000000000000000003 /* Build configuration list for PBXNativeTarget "AirARTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C10000000000000000000005 /* Debug */,
+				C10000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 900000000000000000000001 /* Project object */;
+}

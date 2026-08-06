@@ -6,8 +6,8 @@ import struct
 import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
-ICON_DIR = ROOT / "PohangAirAR" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset"
-IMAGE_DIR = ROOT / "PohangAirAR" / "Documentation.docc" / "Resources" / "Images"
+ICON_DIR = ROOT / "AirAR" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset"
+IMAGE_DIR = ROOT / "AirAR" / "Documentation.docc" / "Resources" / "Images"
 
 
 def write_png(path: Path, width: int, height: int, pixels: bytearray) -> None:
@@ -80,7 +80,7 @@ def svg(title: str, body: str, accent: str = "#62D9F5") -> str:
 def generate_svgs() -> None:
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     diagrams = {
-        "pohang-air-ar-hero.svg": svg("포항 환경 데이터를 공간에 놓기", '<rect x="170" y="200" width="860" height="360" rx="28"/><circle cx="420" cy="380" r="65"/><circle cx="550" cy="335" r="18"/><circle cx="600" cy="410" r="25"/><circle cx="775" cy="350" r="70"/><path d="M775 245v-45 M775 500v-45 M670 350h-45 M925 350h-45"/>'),
+        "air-ar-hero.svg": svg("현재 위치 환경 데이터를 공간에 놓기", '<rect x="170" y="200" width="860" height="360" rx="28"/><circle cx="420" cy="380" r="65"/><circle cx="550" cy="335" r="18"/><circle cx="600" cy="410" r="25"/><circle cx="775" cy="350" r="70"/><path d="M775 245v-45 M775 500v-45 M670 350h-45 M925 350h-45"/>'),
         "world-coordinate-diagram.svg": svg("카메라 좌표에서 월드 좌표로", '<path d="M250 480V240 M250 480h250 M250 480l-90 90"/><rect x="510" y="260" width="190" height="120" rx="18"/><path d="M610 390v145"/><path d="M595 510l15 25 15-25"/><rect x="475" y="535" width="270" height="70" rx="18"/>'),
         "pm25-visualization.svg": svg("PM2.5 결정론적 입자", ''.join(f'<circle cx="{250+(i*83)%700}" cy="{230+(i*67)%300}" r="{10+(i%4)*4}"/>' for i in range(24))),
         "uv-visualization.svg": svg("UV Index 0...11 게이지", '<rect x="520" y="200" width="160" height="360" rx="60"/><rect x="555" y="325" width="90" height="200" rx="35" fill="#62D9F5"/><path d="M750 520V210 M735 225l15-25 15 25"/>'),
