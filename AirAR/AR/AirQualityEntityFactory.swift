@@ -18,11 +18,13 @@ final class AirQualityEntityFactory {
     }
 
     private func rebuild(root: Entity, snapshot: AirQualitySnapshot) {
-        root.addChild(makeDustField(snapshot: snapshot))
+        if let pm25 = snapshot.pm25 {
+            root.addChild(makeDustField(pm25: pm25))
+        }
         root.addChild(makeUVObject(snapshot: snapshot))
     }
 
-    private func makeDustField(snapshot: AirQualitySnapshot) -> Entity {
+    private func makeDustField(pm25: Double) -> Entity {
         let group = Entity()
         group.name = "PM25DustField"
         group.position = [0, 0, 0]
@@ -33,14 +35,14 @@ final class AirQualityEntityFactory {
             tint: UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 1),
             opacity: 0.40
         )
-        let count = AirQualityVisualizationMapper.particleCount(forPM25: snapshot.pm25)
+        let count = AirQualityVisualizationMapper.particleCount(forPM25: pm25)
         let sizePattern: [Float] = [0.042, 0.050, 0.058, 0.068, 0.078]
 
         for index in 0..<count {
             let baseSize = sizePattern[(index * 7) % sizePattern.count]
             let position = AirQualityVisualizationMapper.particlePosition(
                 index: index,
-                pm25: snapshot.pm25
+                pm25: pm25
             )
             let size = baseSize
                 * AirQualityVisualizationMapper.particleLinearScale

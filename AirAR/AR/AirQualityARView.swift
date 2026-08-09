@@ -183,7 +183,11 @@ struct AirQualityARView: UIViewRepresentable {
             windVisualSpeed = AirQualityVisualizationMapper.visualWindSpeed(
                 forMetersPerSecond: snapshot.windSpeed
             )
-            dustFieldRadius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: snapshot.pm25)
+            if let pm25 = snapshot.pm25 {
+                dustFieldRadius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: pm25)
+            } else {
+                dustFieldRadius = 2.85
+            }
 
             func visit(_ entity: Entity) {
                 if entity.name.hasPrefix("DustParticle-") {

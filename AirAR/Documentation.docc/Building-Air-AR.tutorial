@@ -1,6 +1,6 @@
 @Tutorial(time: 90) {
     @Intro(title: "현재 위치의 공기와 햇빛을 AR로 표현하기") {
-        SwiftUI, ARKit, RealityKit으로 숫자표가 아닌 움직이는 환경 시각화를 만듭니다. 상단에는 기온·미세먼지·UV만 표시하고, 공간에는 데이터에 따라 양과 강도가 달라지는 오브젝트를 자동 배치합니다.
+        SwiftUI, ARKit, RealityKit으로 숫자표가 아닌 움직이는 환경 시각화를 만듭니다. WeatherKit과 REST API라는 두 가지 요청 방식을 함께 사용해 각 데이터 소스의 장점을 결합합니다.
 
         @Image(source: "air-ar-hero.svg", alt: "현재 위치 환경 데이터 AR 앱의 완성 구조")
     }
@@ -23,7 +23,7 @@
 
     @Section(title: "2. 화면용 환경 모델 만들기") {
         @ContentAndMedia {
-            네트워크 응답 구조를 화면 전체에 퍼뜨리지 않습니다. 서비스가 기온, PM2.5, UV Index, 풍속과 풍향을 하나의 `AirQualitySnapshot`으로 조합하면 SwiftUI와 RealityKit이 같은 값 타입을 공유할 수 있습니다.
+            WeatherKit 프레임워크 타입과 REST 응답 DTO를 화면 전체에 퍼뜨리지 않습니다. 결합 서비스가 기온, PM2.5, UV Index, 풍속과 풍향을 하나의 `AirQualitySnapshot`으로 조합하면 SwiftUI와 RealityKit이 같은 값 타입을 공유할 수 있습니다.
 
             @Image(source: "world-coordinate-diagram.svg", alt: "환경 데이터가 AR 월드로 전달되는 흐름")
         }
@@ -36,25 +36,48 @@
         }
     }
 
-    @Section(title: "3. 기온·바람과 대기 데이터를 병렬 요청하기") {
+    @Section(title: "3. WeatherKit으로 현재 기상 요청하기") {
         @ContentAndMedia {
-            Air Quality API에서는 PM2.5와 UV Index를, Forecast API에서는 현재 기온과 지상 10m 풍속·풍향을 가져옵니다. 풍속 단위는 m/s로 지정하고 `async let`으로 두 HTTPS 요청을 병렬 실행합니다.
+            현재 좌표를 `CLLocation`으로 만들고 `WeatherService`에 `.current` 데이터만 요청합니다. Measurement 값을 섭씨, m/s, 도 단위로 변환하고 필수 Apple Weather 출처 정보도 함께 가져옵니다.
 
             @Image(source: "air-ar-hero.svg", alt: "두 API의 환경 데이터가 하나의 앱 모델로 합쳐지는 개념도")
         }
         @Steps {
             @Step {
-                Core Location에서 얻은 현재 위도·경도와 자동 시간대를 두 요청에 공통으로 넣습니다.
+                App ID와 Target에 WeatherKit capability를 활성화합니다.
             }
             @Step {
-                HTTP 상태, 디코딩, 취소, 네트워크 오류를 구분하는 서비스를 구현합니다.
+                WeatherKit 호출과 취소 오류를 앱 서비스 경계에서 변환합니다.
 
-                @Code(name: "OpenMeteoAirQualityService.swift", file: "02-OpenMeteoAirQualityService.swift")
+                @Code(name: "WeatherKitEnvironmentService.swift", file: "02-WeatherKitEnvironmentService.swift")
             }
         }
     }
 
-    @Section(title: "4. ViewModel에서 최신 요청만 반영하기") {
+    @Section(title: "4. REST API로 PM2.5 요청하고 결합하기") {
+        @ContentAndMedia {
+            WeatherKit에 없는 PM2.5만 Open-Meteo Air Quality API의 `current=pm2_5`로 요청합니다. URL과 JSON 디코딩은 이 제공자 안에 가두고, 기상 데이터와 중복되는 UV는 요청하지 않습니다.
+
+            @Image(source: "air-ar-hero.svg", alt: "WeatherKit 기상 데이터와 REST 미세먼지 데이터가 합쳐지는 흐름")
+        }
+        @Steps {
+            @Step {
+                `URLComponents`와 `URLQueryItem`으로 현재 좌표와 PM2.5 변수만 포함한 HTTPS 주소를 만듭니다.
+
+                @Code(name: "OpenMeteoPM25Provider.swift", file: "02-OpenMeteoPM25Provider.swift")
+            }
+            @Step {
+                WeatherKit과 PM2.5 요청을 `async let`으로 동시에 실행하고 하나의 스냅샷으로 합칩니다.
+
+                @Code(name: "CombinedEnvironmentService.swift", file: "02-CombinedEnvironmentService.swift")
+            }
+            @Step {
+                Apple Weather, Open-Meteo와 Copernicus CAMS 출처를 화면에서 확인할 수 있게 전달합니다.
+            }
+        }
+    }
+
+    @Section(title: "5. ViewModel에서 최신 요청만 반영하기") {
         @ContentAndMedia {
             `@MainActor` ViewModel이 로딩 상태와 최신 스냅샷을 소유합니다. 새로고침이 들어오면 이전 Task를 취소하고 요청 세대 번호를 비교해 늦게 도착한 이전 결과가 화면을 덮어쓰지 못하게 합니다.
 
@@ -74,7 +97,7 @@
         }
     }
 
-    @Section(title: "5. AR 월드 추적 시작하기") {
+    @Section(title: "6. AR 월드 추적 시작하기") {
         @ContentAndMedia {
             이 앱은 바닥 평면 위에 놓는 앱이 아니라 공기 중에 환경 오브젝트를 띄웁니다. 따라서 평면 감지를 기다리지 않고 `ARWorldTrackingConfiguration`의 위치·방향 추적을 사용하며 Coaching Overlay로 초기 움직임을 안내합니다.
 
@@ -92,7 +115,7 @@
         }
     }
 
-    @Section(title: "6. 사용자 중심의 월드 공간 만들기") {
+    @Section(title: "7. 사용자 중심의 월드 공간 만들기") {
         @ContentAndMedia {
             북쪽 정렬 월드에서 회전 없는 변환에 최초 카메라 위치만 적용해 `AnchorEntity(world:)`를 생성합니다. 앵커의 X축은 동쪽, -Z축은 북쪽과 계속 일치하므로 기상 풍향을 올바른 AR 이동 벡터로 바꿀 수 있습니다.
 
@@ -107,9 +130,9 @@
         }
     }
 
-    @Section(title: "7. 미세먼지를 떠다니는 황토색 입자로 표현하기") {
+    @Section(title: "8. PM2.5를 입자로 표현하기") {
         @ContentAndMedia {
-            PM2.5를 투명한 황토색 먼지 스프라이트 개수로 바꿉니다. 입자 지름은 이전 대비 절반으로 줄이고 개수는 4배인 80...1,440개로 늘려 총 투영 면적을 비슷하게 유지합니다. 풍향은 바람이 불어오는 방향이므로 180도 반대인 먼지 진행 벡터로 변환하고, 풍속이 강할수록 빠르게 이동시킵니다. 원형 영역을 벗어난 입자는 바람 반대편에서 다시 유입되며 기존 거리별 부유 속도와 입자별 편차도 유지합니다.
+            Open-Meteo PM2.5 농도를 투명한 황토색 먼지 스프라이트 개수로 바꿉니다. 풍향은 WeatherKit에서 가져오며 바람이 불어오는 방향의 180도 반대를 먼지 진행 벡터로 사용합니다. 풍속이 강할수록 빠르게 이동시킵니다.
 
             @Image(source: "dust-particle.png", alt: "투명 배경의 황토색 미세먼지 입자 디자인")
         }
@@ -118,7 +141,7 @@
                 `DustParticle.imageset`을 불러와 투명도가 낮은 `UnlitMaterial`에 연결합니다.
             }
             @Step {
-                PM2.5 값으로 입자 수를 정하고 방위각과 반경을 이용해 사용자 주변 360° 위치에 스프라이트를 생성합니다.
+                PM2.5 값으로 입자 수를 정하고 사용자 주변 360° 위치에 스프라이트를 생성합니다.
 
                 @Code(name: "PM25Visualization.swift", file: "06-PM25Visualization.swift")
             }
@@ -128,7 +151,7 @@
         }
     }
 
-    @Section(title: "8. UV를 빛나는 공간 오브젝트로 표현하기") {
+    @Section(title: "9. UV를 빛나는 공간 오브젝트로 표현하기") {
         @ContentAndMedia {
             UV Index는 게이지나 원형 문양 대신 실제 백색광이 빨강·주황·노랑·초록·파랑·보라 파장으로 퍼지는 스펙트럼으로 표현합니다. 광원 그룹은 최초 사용자 위치의 위쪽 한 월드 지점에 고정하고, 같은 광원점에서 45° 간격으로 방사되는 여덟 개의 경사진 투명 평면을 사용해 회전 방향에 따른 가시성 차이를 줄입니다. 크기는 약 1.65...2.0m로 화면의 약 3분의 2를 비추며, UV가 강할수록 낮게 시작한 불투명도가 올라갑니다.
 
@@ -146,7 +169,7 @@
         }
     }
 
-    @Section(title: "9. 시각화를 자동 배치하고 움직이기") {
+    @Section(title: "10. 시각화를 자동 배치하고 움직이기") {
         @ContentAndMedia {
             데이터와 정상 추적 상태가 모두 준비되면 버튼 없이 월드 공간에 콘텐츠를 자동 배치합니다. `SceneEvents.Update`를 구독해 먼지는 현재 바람으로 이동시키면서 항상 카메라를 향하게 하고, UV 평면들은 함께 미세하게 맥동시킵니다. 새 데이터를 받으면 풍향과 풍속도 함께 갱신합니다.
 
@@ -161,7 +184,7 @@
         }
     }
 
-    @Section(title: "10. 상단 정보와 새로고침만 남기기") {
+    @Section(title: "11. 상단 정보와 새로고침만 남기기") {
         @ContentAndMedia {
             실제 앱의 조작을 최소화합니다. 카메라 위 상단에는 `온도 | 미세먼지 | UV`를 한 줄로 표시하고, 하단에는 새로고침 버튼 하나만 둡니다. 재배치와 초기화 버튼은 제거하고 AR 콘텐츠는 상태 변화에 맞춰 자동 관리합니다.
 
@@ -176,7 +199,7 @@
         }
     }
 
-    @Section(title: "11. 실제 기기에서 확인하기") {
+    @Section(title: "12. 실제 기기에서 확인하기") {
         @ContentAndMedia {
             시뮬레이터는 실제 카메라와 모션 센서를 이용한 월드 트래킹을 검증할 수 없습니다. 컴파일과 단위 테스트 뒤 ARKit 지원 iPhone 또는 iPad에서 권한, 추적 안정화, 월드 고정 상태와 입자 애니메이션을 확인합니다.
 
@@ -190,10 +213,10 @@
                 카메라 권한을 허용하고 주변을 천천히 비춥니다. 추적이 정상화되면 시각화가 자동으로 나타나는지 확인합니다.
             }
             @Step {
-                제자리에서 기기를 360° 회전해 방향마다 비슷한 미세먼지 밀도가 보이는지 확인합니다. UV는 화면에 붙어 돌지 않고 최초 사용자 위치 위의 같은 월드 지점에 남으면서 여러 방향에서 빛이 보이는지 확인합니다.
+                제자리에서 기기를 360° 회전해 방향마다 비슷한 미세먼지 밀도가 보이는지 확인합니다. UV는 화면에 붙어 돌지 않고 최초 사용자 위치 위의 같은 월드 지점에 남는지 확인합니다.
             }
             @Step {
-                새로고침 뒤 상단의 세 값과 먼지 양·이동 방향·속도·UV 강도가 함께 갱신되는지 확인합니다.
+                새로고침 뒤 세 수치와 먼지·UV가 함께 갱신되고 Apple Weather, Open-Meteo와 CAMS 출처 링크가 표시되는지 확인합니다.
             }
         }
     }

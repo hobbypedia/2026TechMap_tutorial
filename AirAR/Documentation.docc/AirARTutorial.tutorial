@@ -1,6 +1,6 @@
 @Tutorials(name: "현재 위치의 환경 데이터를 AR로 시각화하기") {
     @Intro(title: "수치를 공간의 분위기로 바꾸기") {
-        Open-Meteo의 기온, PM2.5, UV Index와 바람을 받아 미세먼지가 실제 풍향으로 날리는 iOS AR 앱을 완성합니다.
+        Apple WeatherKit의 기온·UV·바람과 Open-Meteo의 PM2.5를 결합해 미세먼지가 실제 풍향으로 날리는 iOS AR 앱을 완성합니다.
 
         @Image(source: "air-ar-hero.svg", alt: "AR 카메라 안에 미세먼지와 자외선 오브젝트가 떠 있는 앱 개념도")
     }
