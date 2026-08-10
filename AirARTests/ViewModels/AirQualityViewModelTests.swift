@@ -23,7 +23,7 @@ final class AirQualityViewModelTests: XCTestCase {
 
     func testFailureAndRetry() async {
         let expected = makeSnapshot()
-        let service = MockAirQualityService(results: [.failure(.weatherKitFailed), .success(expected)])
+        let service = MockAirQualityService(results: [.failure(.networkFailed), .success(expected)])
         let viewModel = makeViewModel(service: service)
 
         viewModel.load()
@@ -78,24 +78,6 @@ final class AirQualityViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.metrics.map(\.level), [nil, .good, .good])
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertNil(viewModel.errorMessage)
-    }
-
-    func testMissingPM25IsShownAsUnavailable() async {
-        let snapshot = AirQualitySnapshot(
-            locationName: "서울특별시 종로구",
-            measuredAt: "2026-08-04T12:00:00Z",
-            temperature: 27,
-            uvIndex: 3
-        )
-        let viewModel = makeViewModel(
-            service: MockAirQualityService(results: [.success(snapshot)])
-        )
-
-        viewModel.load()
-        await waitUntil { viewModel.loadState == .loaded }
-
-        XCTAssertEqual(viewModel.metrics.map(\.value), ["27.0°", "미제공", "3.0"])
-        XCTAssertNil(viewModel.metrics[1].level)
     }
 
     func testCurrentLocationCoordinatesAreUsedAndNameOverridesAPIPlaceholder() async {
@@ -201,7 +183,7 @@ private actor MockAirQualityService: AirQualityServiceProtocol {
     func fetchCurrentAirQuality(latitude: Double, longitude: Double) async throws -> AirQualitySnapshot {
         requestCount += 1
         lastCoordinates = (latitude, longitude)
-        guard !results.isEmpty else { throw AirQualityServiceError.weatherKitFailed }
+        guard !results.isEmpty else { throw AirQualityServiceError.networkFailed }
         let result = results.removeFirst()
         if delayNanoseconds > 0 {
             if ignoresCancellation {

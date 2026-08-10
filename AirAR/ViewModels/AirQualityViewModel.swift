@@ -14,7 +14,7 @@ final class AirQualityViewModel: ObservableObject {
     private var requestGeneration = 0
 
     init(
-        service: any AirQualityServiceProtocol = CombinedEnvironmentService(),
+        service: any AirQualityServiceProtocol = OpenMeteoEnvironmentService(),
         locationService: (any LocationServiceProtocol)? = nil
     ) {
         self.service = service
@@ -31,29 +31,8 @@ final class AirQualityViewModel: ObservableObject {
             ]
         }
 
+        let pm25Level = AirQualityLevel.pm25(snapshot.pm25)
         let uvLevel = AirQualityLevel.uvIndex(snapshot.uvIndex)
-        let pm25Metric: AirQualityMetricViewModel
-        if let pm25 = snapshot.pm25 {
-            let pm25Level = AirQualityLevel.pm25(pm25)
-            pm25Metric = AirQualityMetricViewModel(
-                id: .pm25,
-                title: "미세먼지",
-                value: String(format: "%.1f", pm25),
-                accessibilityValue: "\(pm25Level.title), "
-                    + String(format: "%.1f 마이크로그램 퍼 세제곱미터", pm25),
-                symbol: "aqi.medium",
-                level: pm25Level
-            )
-        } else {
-            pm25Metric = AirQualityMetricViewModel(
-                id: .pm25,
-                title: "미세먼지",
-                value: "미제공",
-                accessibilityValue: "WeatherKit에서 제공하지 않음",
-                symbol: "aqi.medium",
-                level: nil
-            )
-        }
         return [
             AirQualityMetricViewModel(
                 id: .temperature,
@@ -63,7 +42,15 @@ final class AirQualityViewModel: ObservableObject {
                 symbol: "thermometer.medium",
                 level: nil
             ),
-            pm25Metric,
+            AirQualityMetricViewModel(
+                id: .pm25,
+                title: "미세먼지",
+                value: String(format: "%.1f", snapshot.pm25),
+                accessibilityValue: "\(pm25Level.title), "
+                    + String(format: "%.1f 마이크로그램 퍼 세제곱미터", snapshot.pm25),
+                symbol: "aqi.medium",
+                level: pm25Level
+            ),
             AirQualityMetricViewModel(
                 id: .uvIndex,
                 title: "UV",
@@ -142,10 +129,8 @@ final class AirQualityViewModel: ObservableObject {
                     uvIndex: response.uvIndex,
                     windSpeed: response.windSpeed,
                     windDirection: response.windDirection,
-                    attributionURL: response.attributionURL,
-                    attributionMarkURL: response.attributionMarkURL,
-                    pm25SourceURL: response.pm25SourceURL,
-                    pm25ModelSourceURL: response.pm25ModelSourceURL
+                    sourceURL: response.sourceURL,
+                    airQualityModelSourceURL: response.airQualityModelSourceURL
                 )
                 guard !Task.isCancelled, self?.requestGeneration == generation else { return }
                 self?.snapshot = snapshot

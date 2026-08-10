@@ -1,7 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
-<title id="title">UV Index 0...11 게이지</title><desc id="desc">실제 앱 화면이 아닌 구현 구조를 설명하는 개념도</desc>
+<title id="title">Metal로 생성하는 UV 빔</title><desc id="desc">평면 UV 좌표와 UV Index가 빔의 모양, 스펙트럼 색과 투명도로 변환되는 구조</desc>
 <rect width="1200" height="675" rx="36" fill="#071C2A"/>
-<text x="70" y="90" fill="white" font-family="-apple-system, sans-serif" font-size="42" font-weight="700">UV Index 0...11 게이지</text>
-<text x="70" y="132" fill="#9CC3D5" font-family="-apple-system, sans-serif" font-size="22">구현 구조를 설명하는 개념도</text>
-<g stroke="#62D9F5" stroke-width="5" fill="none"><rect x="520" y="200" width="160" height="360" rx="60"/><rect x="555" y="325" width="90" height="200" rx="35" fill="#62D9F5"/><path d="M750 520V210 M735 225l15-25 15 25"/></g>
+<text x="70" y="90" fill="white" font-family="-apple-system, sans-serif" font-size="42" font-weight="700">이미지 없이 Metal로 생성하는 UV 빔</text>
+<text x="70" y="132" fill="#9CC3D5" font-family="-apple-system, sans-serif" font-size="22">평면 UV 좌표 + UV Index → 모양 · 색 · 투명도</text>
+<g font-family="-apple-system, sans-serif" text-anchor="middle">
+  <rect x="70" y="245" width="270" height="150" rx="26" fill="#12394D" stroke="#62D9F5" stroke-width="3"/>
+  <text x="205" y="310" fill="white" font-size="28" font-weight="700">RealityKit 평면</text>
+  <text x="205" y="352" fill="#9CC3D5" font-size="22">UV 좌표 0...1</text>
+  <path d="M350 320H470" stroke="#62D9F5" stroke-width="6"/>
+  <path d="M450 300l25 20-25 20" fill="none" stroke="#62D9F5" stroke-width="6"/>
+  <rect x="485" y="220" width="300" height="200" rx="26" fill="#12394D" stroke="#A982FF" stroke-width="3"/>
+  <text x="635" y="286" fill="white" font-size="28" font-weight="700">Metal 셰이더</text>
+  <text x="635" y="330" fill="#D9C8FF" font-size="21">smoothstep 마스크</text>
+  <text x="635" y="365" fill="#D9C8FF" font-size="21">스펙트럼 + 투명도</text>
+  <path d="M795 320H905" stroke="#A982FF" stroke-width="6"/>
+  <path d="M885 300l25 20-25 20" fill="none" stroke="#A982FF" stroke-width="6"/>
+  <defs><linearGradient id="beam" x1="0" x2="1"><stop stop-color="#FF496C"/><stop offset=".25" stop-color="#FFD84D"/><stop offset=".5" stop-color="#54F09B"/><stop offset=".75" stop-color="#4ACBFF"/><stop offset="1" stop-color="#A982FF"/></linearGradient></defs>
+  <path d="M965 235L1115 520H815Z" fill="url(#beam)" opacity=".72"/>
+  <circle cx="965" cy="235" r="22" fill="#E8F4FF"/>
+  <text x="965" y="570" fill="white" font-size="26" font-weight="700">절차적 UV 빔</text>
+</g>
 </svg>

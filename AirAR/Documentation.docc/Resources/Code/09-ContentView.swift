@@ -12,10 +12,8 @@ ZStack {
             metrics: viewModel.metrics,
             isLoading: viewModel.isLoading,
             errorMessage: viewModel.errorMessage,
-            attributionURL: viewModel.snapshot?.attributionURL,
-            attributionMarkURL: viewModel.snapshot?.attributionMarkURL,
-            pm25SourceURL: viewModel.snapshot?.pm25SourceURL,
-            pm25ModelSourceURL: viewModel.snapshot?.pm25ModelSourceURL
+            sourceURL: viewModel.snapshot?.sourceURL,
+            airQualityModelSourceURL: viewModel.snapshot?.airQualityModelSourceURL
         )
         Spacer()
         Button("새로고침", systemImage: "arrow.clockwise") {

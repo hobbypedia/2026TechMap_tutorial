@@ -1,12 +1,27 @@
+import Metal
+import RealityKit
+
+let device = MTLCreateSystemDefaultDevice()
+let library = device?.makeDefaultLibrary()
+let surfaceShader = library.map {
+    CustomMaterial.SurfaceShader(named: "uvBeamSurface", in: $0)
+}
+
 let normalized = min(max(Float(uvIndex / 11), 0), 1)
-let texture = try? TextureResource.load(named: "UVSpectrum")
-var material = UnlitMaterial()
-material.color = .init(
-    tint: .white,
-    texture: texture.map { resource in .init(resource) }
-)
 let opacity = (0.06 + normalized * 0.36) * 0.35
-material.blending = .transparent(opacity: opacity)
+
+guard let surfaceShader,
+      var material = try? CustomMaterial(
+        surfaceShader: surfaceShader,
+        lightingModel: .unlit
+      ) else {
+    return
+}
+
+// Metal의 custom_parameter()[0]과 [1]에서 읽습니다.
+material.custom.value = [normalized, opacity, 0, 0]
+material.blending = .transparent(opacity: .init(floatLiteral: 1.0))
+material.faceCulling = .none
 
 let uvGroup = Entity()
 let size = 1.65 + normalized * 0.35
@@ -21,12 +36,12 @@ for index in 0..<beamCount {
     let yaw = Float(index) * 2 * .pi / Float(beamCount)
     let yawRotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
     let tiltRotation = simd_quatf(angle: tilt, axis: [1, 0, 0])
-    let spectrum = ModelEntity(
+    let beam = ModelEntity(
         mesh: .generatePlane(width: size, height: size),
         materials: [material]
     )
-    spectrum.name = "UVSpectrum-" + String(index)
-    spectrum.position = yawRotation.act([0, centerHeight, -radialOffset])
-    spectrum.orientation = yawRotation * tiltRotation
-    uvGroup.addChild(spectrum)
+    beam.name = "UVBeam-" + String(index)
+    beam.position = yawRotation.act([0, centerHeight, -radialOffset])
+    beam.orientation = yawRotation * tiltRotation
+    uvGroup.addChild(beam)
 }

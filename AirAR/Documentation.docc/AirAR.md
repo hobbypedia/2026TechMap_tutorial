@@ -1,6 +1,6 @@
 # ``AirAR``
 
-현재 위치의 기온·UV·바람은 WeatherKit으로, PM2.5는 REST API로 가져와 실제 공간에 시각화하는 과정을 배웁니다.
+현재 위치의 기온·PM2.5·UV·바람을 Open-Meteo REST API로 가져와 실제 공간에 시각화하는 과정을 배웁니다.
 
 @Metadata {
     @PageImage(purpose: icon, source: "air-ar-hero.svg", alt: "AR 프레임 안의 미세먼지 입자와 태양 개념도")
@@ -9,17 +9,19 @@
 
 ## 개요
 
-AirAR는 현재 좌표를 Apple WeatherKit과 Open-Meteo Air Quality API에 전달합니다. WeatherKit은 기온·UV·풍속·풍향을, Open-Meteo는 WeatherKit에 없는 PM2.5를 제공합니다. RealityKit은 PM2.5 먼지를 WeatherKit 풍향에 맞춰 이동시키고 UV 스펙트럼을 사용자 위에 배치합니다.
+AirAR는 현재 좌표를 Open-Meteo Weather Forecast API와 Air Quality API에 전달합니다. 두 HTTP `GET` 응답의 JSON을 하나의 도메인 모델로 합치고, RealityKit은 PM2.5 먼지를 풍향에 맞춰 이동시키며 Metal 셰이더로 만든 UV 빔을 사용자 위에 배치합니다.
 
 ![AR 프레임 안에 PM2.5 입자와 UV 태양이 있는 구현 구조 개념도](air-ar-hero.svg)
 
 ## 학습 목표
 
-- WeatherKit Swift API와 Open-Meteo REST API의 차이를 비교합니다.
-- 두 데이터 소스를 병렬 요청해 하나의 도메인 모델로 결합합니다.
+- API, REST API, 엔드포인트, 쿼리 매개변수, HTTP 상태 코드와 JSON의 관계를 설명합니다.
+- `URLComponents`, `URLSession`, `JSONDecoder`로 두 REST 엔드포인트를 병렬 요청합니다.
+- 서버 응답 DTO와 앱의 도메인 모델을 분리합니다.
 - `@MainActor` ViewModel에서 로딩, 성공, 실패, 취소를 관리합니다.
 - 최초 카메라 위치에서 중력·북쪽 정렬 월드 앵커를 만들고 오브젝트를 실제 공간에 고정합니다.
 - 미세먼지를 사용자 주변 360°에 배치해 회전 방향마다 비슷한 밀도를 유지합니다.
+- 이미지 에셋 없이 RealityKit `CustomMaterial`과 Metal surface shader로 UV 빔의 모양, 색과 투명도를 만듭니다.
 - UV 광원을 사용자 위 한 지점에 고정하고 그 지점에서 8방향으로 내려오는 경사 평면으로 여러 방향에서 보이게 합니다.
 - PM2.5 값에 따라 투명 먼지의 양과 부유 움직임을 바꿉니다.
 - 기상 풍향을 먼지 이동 방향으로 변환하고 풍속에 따라 이동 속도를 바꿉니다.
@@ -29,9 +31,9 @@ AirAR는 현재 좌표를 Apple WeatherKit과 Open-Meteo Air Quality API에 전�
 ## 전체 데이터 흐름
 
 ```text
-WeatherKit ─┐
-            ├→ Combined Service → ViewModel → SwiftUI → RealityKit
-Open-Meteo ─┘
+Open-Meteo Weather API ─────┐
+                            ├→ OpenMeteoEnvironmentService
+Open-Meteo Air Quality API ─┘  → ViewModel → SwiftUI → RealityKit
 ```
 
 ## 실제 기기가 필요한 이유
@@ -57,9 +59,9 @@ AR 월드 트래킹은 실제 카메라 영상과 모션 센서의 결합이 필
 - ``AirQualityServiceProtocol``
 - ``LocationServiceProtocol``
 - ``CoreLocationService``
-- ``WeatherKitEnvironmentService``
-- ``OpenMeteoPM25Provider``
-- ``CombinedEnvironmentService``
+- ``OpenMeteoWeatherResponse``
+- ``OpenMeteoAirQualityResponse``
+- ``OpenMeteoEnvironmentService``
 - ``AirQualityViewModel``
 
 ### AR 시각화

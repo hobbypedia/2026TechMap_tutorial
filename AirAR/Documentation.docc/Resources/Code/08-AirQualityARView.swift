@@ -45,7 +45,7 @@ private func animate(deltaTime: Float) {
     }
 
     let pulse = 1 + sin(elapsedTime * 1.35) * 0.035
-    uvSpectrums.forEach { spectrum in
-        spectrum.scale = [pulse, pulse, pulse]
+    uvBeams.forEach { beam in
+        beam.scale = [pulse, pulse, pulse]
     }
 }

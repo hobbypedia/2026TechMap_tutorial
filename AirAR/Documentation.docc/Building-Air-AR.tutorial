@@ -1,13 +1,13 @@
-@Tutorial(time: 90) {
+@Tutorial(time: 120) {
     @Intro(title: "현재 위치의 공기와 햇빛을 AR로 표현하기") {
-        SwiftUI, ARKit, RealityKit으로 숫자표가 아닌 움직이는 환경 시각화를 만듭니다. WeatherKit과 REST API라는 두 가지 요청 방식을 함께 사용해 각 데이터 소스의 장점을 결합합니다.
+        SwiftUI, ARKit, RealityKit으로 움직이는 환경 시각화를 만듭니다. 먼저 API와 REST API가 무엇인지 이해하고, Open-Meteo의 두 REST 엔드포인트를 Swift로 호출해 JSON을 앱 데이터로 바꾸는 전 과정을 실습합니다.
 
-        @Image(source: "air-ar-hero.svg", alt: "현재 위치 환경 데이터 AR 앱의 완성 구조")
+        @Image(source: "air-ar-hero.svg", alt: "Open-Meteo 환경 데이터가 SwiftUI와 AR 공간으로 전달되는 앱 구조")
     }
 
     @Section(title: "1. 프로젝트와 권한 준비") {
         @ContentAndMedia {
-            iOS 17 SwiftUI 앱과 Unit Test Target을 준비합니다. ARKit은 카메라와 모션 센서로 공간을 추적하므로 `NSCameraUsageDescription`이 필요합니다. 현재 지역의 데이터를 조회하려면 `NSLocationWhenInUseUsageDescription`도 필요합니다.
+            iOS 17 SwiftUI 앱과 Unit Test Target을 준비합니다. 현재 좌표에는 Core Location, 공간 추적에는 카메라와 모션 센서를 사용하는 ARKit이 필요합니다.
 
             @Image(source: "air-ar-hero.svg", alt: "SwiftUI와 ARKit으로 구성된 앱 구조")
         }
@@ -16,72 +16,141 @@
                 앱 Target과 테스트 Target의 배포 버전을 iOS 17로 맞추고 SwiftUI, ARKit, RealityKit을 연결합니다.
             }
             @Step {
-                `Info.plist`에 카메라와 앱 사용 중 위치가 환경 데이터를 조회하고 공간에 표시하는 데 사용된다는 설명을 추가합니다.
+                `Info.plist`에 `NSCameraUsageDescription`과 `NSLocationWhenInUseUsageDescription`을 추가합니다.
+            }
+            @Step {
+                실제 기기에서 실행할 수 있도록 Target의 Signing Team을 선택합니다.
             }
         }
     }
 
-    @Section(title: "2. 화면용 환경 모델 만들기") {
+    @Section(title: "2. API와 REST API 이해하기") {
         @ContentAndMedia {
-            WeatherKit 프레임워크 타입과 REST 응답 DTO를 화면 전체에 퍼뜨리지 않습니다. 결합 서비스가 기온, PM2.5, UV Index, 풍속과 풍향을 하나의 `AirQualitySnapshot`으로 조합하면 SwiftUI와 RealityKit이 같은 값 타입을 공유할 수 있습니다.
+            API(Application Programming Interface)는 프로그램끼리 정해진 규칙으로 요청하고 응답하기 위한 접점입니다. REST는 웹의 자원을 주소로 식별하고 HTTP의 의미를 사용해 다루는 API 설계 스타일입니다.
 
-            @Image(source: "world-coordinate-diagram.svg", alt: "환경 데이터가 AR 월드로 전달되는 흐름")
+            이 앱은 데이터를 읽으므로 HTTP `GET` 메서드를 사용합니다. 요청은 **엔드포인트**, **쿼리 매개변수**, **HTTP 메서드**로 구성되고, 응답은 **상태 코드**, **헤더**, **JSON 본문**으로 구성됩니다.
+
+            @Image(source: "air-ar-hero.svg", alt: "앱이 REST API에 요청하고 JSON 응답을 받는 흐름")
         }
         @Steps {
             @Step {
-                위치 이름과 측정 시각을 포함한 도메인 모델을 작성합니다.
+                엔드포인트는 API가 요청을 받는 HTTPS 주소입니다. 웹 페이지 주소와 같은 URL 문법을 쓰지만, 화면용 HTML 대신 프로그램이 읽는 JSON을 돌려줍니다.
+            }
+            @Step {
+                `?` 뒤의 `latitude=36.0` 같은 값은 쿼리 매개변수입니다. `&`로 여러 조건을 연결합니다.
+            }
+            @Step {
+                서버는 성공하면 보통 `200...299`, 잘못된 요청이면 `400` 계열, 서버 문제면 `500` 계열 상태 코드를 보냅니다.
+            }
+            @Step {
+                따라서 “URL로 가져온다”는 것은 REST API가 아니라는 뜻이 아닙니다. URL은 REST API의 자원을 가리키는 주소이고, 앱은 그 주소에 HTTP 요청을 보내 데이터를 받습니다.
+            }
+        }
+    }
+
+    @Section(title: "3. 사용할 Open-Meteo 엔드포인트 정하기") {
+        @ContentAndMedia {
+            한 API가 모든 값을 제공한다고 가정하지 말고 공식 문서에서 변수와 단위를 확인합니다. Weather Forecast API에서는 기온·풍속·풍향을, Air Quality API에서는 PM2.5·UV Index를 요청합니다.
+
+            ```text
+            GET https://api.open-meteo.com/v1/forecast
+              ?latitude={위도}&longitude={경도}
+              &current=temperature_2m,wind_speed_10m,wind_direction_10m
+              &wind_speed_unit=ms&timezone=auto
+
+            GET https://air-quality-api.open-meteo.com/v1/air-quality
+              ?latitude={위도}&longitude={경도}
+              &current=pm2_5,uv_index&timezone=auto
+            ```
+
+            @Image(source: "world-coordinate-diagram.svg", alt: "같은 현재 좌표를 두 Open-Meteo 엔드포인트에 전달하는 흐름")
+        }
+        @Steps {
+            @Step {
+                `current`에는 필요한 변수만 쉼표로 나열해 응답 크기와 모델 복잡도를 줄입니다.
+            }
+            @Step {
+                `wind_speed_unit=ms`로 AR 이동 계산에 쓸 풍속 단위를 m/s로 고정합니다.
+            }
+            @Step {
+                `timezone=auto`로 좌표의 현지 시각을 받습니다. 좌표와 `current` 변수 이름은 공식 문서의 계약이므로 임의로 바꾸지 않습니다.
+            }
+        }
+    }
+
+    @Section(title: "4. 앱 모델과 API 응답 모델 분리하기") {
+        @ContentAndMedia {
+            서버의 JSON 모양을 화면 전체에 퍼뜨리지 않습니다. 앱이 실제로 필요한 값은 `AirQualitySnapshot`에 모으고, 각 JSON 구조는 별도의 응답 DTO(Data Transfer Object)로 표현합니다. API가 바뀌면 DTO와 서비스 경계만 수정할 수 있습니다.
+
+            @Image(source: "world-coordinate-diagram.svg", alt: "API 응답 DTO가 앱 도메인 모델로 변환되는 구조")
+        }
+        @Steps {
+            @Step {
+                위치, 측정 시각, 기온, PM2.5, UV, 풍속과 풍향을 담은 도메인 모델을 만듭니다.
 
                 @Code(name: "AirQualitySnapshot.swift", file: "01-AirQualitySnapshot.swift")
             }
+            @Step {
+                실제 JSON의 `current` 중첩 구조와 필요한 필드만 `Decodable` 타입으로 선언합니다.
+
+                @Code(name: "OpenMeteoAPIResponse.swift", file: "02-OpenMeteoAPIResponse.swift")
+            }
+            @Step {
+                JSON의 `pm2_5`와 Swift의 `pm25`처럼 이름이 다르면 `CodingKeys`로 매핑합니다. 모든 서버 필드를 선언할 필요는 없습니다.
+            }
         }
     }
 
-    @Section(title: "3. WeatherKit으로 현재 기상 요청하기") {
+    @Section(title: "5. 안전하게 요청 URL 만들기") {
         @ContentAndMedia {
-            현재 좌표를 `CLLocation`으로 만들고 `WeatherService`에 `.current` 데이터만 요청합니다. Measurement 값을 섭씨, m/s, 도 단위로 변환하고 필수 Apple Weather 출처 정보도 함께 가져옵니다.
+            URL 문자열을 `+`로 이어 붙이면 특수문자 인코딩과 `?`, `&` 위치를 실수하기 쉽습니다. `URLComponents`와 `URLQueryItem`을 사용하면 엔드포인트와 매개변수를 구조적으로 조립할 수 있습니다.
 
-            @Image(source: "air-ar-hero.svg", alt: "두 API의 환경 데이터가 하나의 앱 모델로 합쳐지는 개념도")
+            @Image(source: "air-ar-hero.svg", alt: "엔드포인트와 쿼리 항목으로 REST 요청 URL을 구성하는 과정")
         }
         @Steps {
             @Step {
-                App ID와 Target에 WeatherKit capability를 활성화합니다.
+                기상 엔드포인트로 `URLComponents`를 만들고 좌표, 현재 변수, 단위와 시간대를 `URLQueryItem`으로 추가합니다.
+
+                @Code(name: "RESTRequest.swift", file: "02-RESTRequest.swift")
             }
             @Step {
-                WeatherKit 호출과 취소 오류를 앱 서비스 경계에서 변환합니다.
-
-                @Code(name: "WeatherKitEnvironmentService.swift", file: "02-WeatherKitEnvironmentService.swift")
+                같은 방식으로 대기질 엔드포인트에는 `current=pm2_5,uv_index`를 추가합니다.
+            }
+            @Step {
+                `components.url` 생성이 실패하면 잘못된 URL 오류로 처리합니다. 강제 언래핑은 고정 예제에서만 보여 주고 실제 서비스에서는 `guard`를 사용합니다.
             }
         }
     }
 
-    @Section(title: "4. REST API로 PM2.5 요청하고 결합하기") {
+    @Section(title: "6. HTTP GET을 보내고 JSON 디코딩하기") {
         @ContentAndMedia {
-            WeatherKit에 없는 PM2.5만 Open-Meteo Air Quality API의 `current=pm2_5`로 요청합니다. URL과 JSON 디코딩은 이 제공자 안에 가두고, 기상 데이터와 중복되는 UV는 요청하지 않습니다.
+            `URLSession.data(from:)`은 URL에 비동기 `GET` 요청을 보내 `(Data, URLResponse)`를 반환합니다. 네트워크 전송 성공과 API 요청 성공은 다릅니다. 응답이 HTTP인지, 상태 코드가 성공 범위인지 확인한 뒤에만 JSON을 디코딩합니다.
 
-            @Image(source: "air-ar-hero.svg", alt: "WeatherKit 기상 데이터와 REST 미세먼지 데이터가 합쳐지는 흐름")
+            @Image(source: "air-ar-hero.svg", alt: "URLSession 요청에서 상태 코드 검사와 JSON 디코딩으로 이어지는 흐름")
         }
         @Steps {
             @Step {
-                `URLComponents`와 `URLQueryItem`으로 현재 좌표와 PM2.5 변수만 포함한 HTTPS 주소를 만듭니다.
-
-                @Code(name: "OpenMeteoPM25Provider.swift", file: "02-OpenMeteoPM25Provider.swift")
+                응답을 `HTTPURLResponse`로 변환하고 `200...299`가 아니면 상태 코드를 포함한 오류를 만듭니다.
             }
             @Step {
-                WeatherKit과 PM2.5 요청을 `async let`으로 동시에 실행하고 하나의 스냅샷으로 합칩니다.
-
-                @Code(name: "CombinedEnvironmentService.swift", file: "02-CombinedEnvironmentService.swift")
+                `JSONDecoder.decode(_:from:)`로 바이트 데이터인 `Data`를 `Decodable` 응답 DTO로 변환합니다.
             }
             @Step {
-                Apple Weather, Open-Meteo와 Copernicus CAMS 출처를 화면에서 확인할 수 있게 전달합니다.
+                기상과 대기질 요청을 `async let`으로 시작해 네트워크 대기 시간을 겹치고, 두 결과가 모두 준비되면 하나의 스냅샷으로 합칩니다.
+
+                @Code(name: "OpenMeteoEnvironmentService.swift", file: "02-OpenMeteoEnvironmentService.swift")
+            }
+            @Step {
+                취소, 네트워크, HTTP 상태, 응답 형식, JSON 디코딩 실패를 서로 다른 서비스 오류로 바꿉니다.
             }
         }
     }
 
-    @Section(title: "5. ViewModel에서 최신 요청만 반영하기") {
+    @Section(title: "7. ViewModel에서 최신 요청만 반영하기") {
         @ContentAndMedia {
             `@MainActor` ViewModel이 로딩 상태와 최신 스냅샷을 소유합니다. 새로고침이 들어오면 이전 Task를 취소하고 요청 세대 번호를 비교해 늦게 도착한 이전 결과가 화면을 덮어쓰지 못하게 합니다.
 
-            @Image(source: "air-ar-hero.svg", alt: "서비스 결과를 SwiftUI 상태로 전달하는 흐름")
+            @Image(source: "air-ar-hero.svg", alt: "REST 서비스 결과를 SwiftUI 상태로 전달하는 흐름")
         }
         @Steps {
             @Step {
@@ -97,9 +166,9 @@
         }
     }
 
-    @Section(title: "6. AR 월드 추적 시작하기") {
+    @Section(title: "8. AR 월드 추적 시작하기") {
         @ContentAndMedia {
-            이 앱은 바닥 평면 위에 놓는 앱이 아니라 공기 중에 환경 오브젝트를 띄웁니다. 따라서 평면 감지를 기다리지 않고 `ARWorldTrackingConfiguration`의 위치·방향 추적을 사용하며 Coaching Overlay로 초기 움직임을 안내합니다.
+            이 앱은 바닥 평면을 기다리지 않고 공기 중에 오브젝트를 띄웁니다. `ARWorldTrackingConfiguration`의 위치·방향 추적을 사용하고 Coaching Overlay로 초기 움직임을 안내합니다.
 
             @Image(source: "world-coordinate-diagram.svg", alt: "기기 카메라와 월드 좌표계의 관계")
         }
@@ -115,33 +184,33 @@
         }
     }
 
-    @Section(title: "7. 사용자 중심의 월드 공간 만들기") {
+    @Section(title: "9. 사용자 중심의 월드 공간 만들기") {
         @ContentAndMedia {
-            북쪽 정렬 월드에서 회전 없는 변환에 최초 카메라 위치만 적용해 `AnchorEntity(world:)`를 생성합니다. 앵커의 X축은 동쪽, -Z축은 북쪽과 계속 일치하므로 기상 풍향을 올바른 AR 이동 벡터로 바꿀 수 있습니다.
+            북쪽 정렬 월드에서 회전 없는 변환에 최초 카메라 위치만 적용해 `AnchorEntity(world:)`를 생성합니다. 앵커의 X축은 동쪽, -Z축은 북쪽과 계속 일치하므로 API 풍향을 올바른 AR 이동 벡터로 바꿀 수 있습니다.
 
-            @Image(source: "air-ar-hero.svg", alt: "최초 사용자 위치를 중심으로 고정된 월드 공간 시각화")
+            @Image(source: "air-ar-hero.svg", alt: "최초 사용자 위치를 중심으로 고정된 월드 공간")
         }
         @Steps {
             @Step {
-                북쪽 기준 월드 축은 유지하고 카메라의 위치만 복사해 앵커를 고정합니다.
+                북쪽 기준 월드 축은 유지하고 카메라 위치만 복사해 앵커를 고정합니다.
 
                 @Code(name: "WorldCoordinate.swift", file: "05-WorldCoordinate.swift")
             }
         }
     }
 
-    @Section(title: "8. PM2.5를 입자로 표현하기") {
+    @Section(title: "10. PM2.5를 바람에 흐르는 입자로 표현하기") {
         @ContentAndMedia {
-            Open-Meteo PM2.5 농도를 투명한 황토색 먼지 스프라이트 개수로 바꿉니다. 풍향은 WeatherKit에서 가져오며 바람이 불어오는 방향의 180도 반대를 먼지 진행 벡터로 사용합니다. 풍속이 강할수록 빠르게 이동시킵니다.
+            PM2.5 농도를 투명한 황토색 스프라이트 개수로 바꿉니다. 기상학적 풍향은 바람이 **불어오는** 방향이므로 180° 반대 방향을 먼지 진행 벡터로 사용하고, 풍속이 강할수록 빠르게 이동시킵니다.
 
-            @Image(source: "dust-particle.png", alt: "투명 배경의 황토색 미세먼지 입자 디자인")
+            @Image(source: "dust-particle.png", alt: "투명 배경의 황토색 미세먼지 입자")
         }
         @Steps {
             @Step {
-                `DustParticle.imageset`을 불러와 투명도가 낮은 `UnlitMaterial`에 연결합니다.
+                `DustParticle.imageset`을 투명도가 낮은 `UnlitMaterial`에 연결합니다.
             }
             @Step {
-                PM2.5 값으로 입자 수를 정하고 사용자 주변 360° 위치에 스프라이트를 생성합니다.
+                PM2.5 값으로 입자 수를 정하고 사용자 주변 360°에 스프라이트를 생성합니다.
 
                 @Code(name: "PM25Visualization.swift", file: "06-PM25Visualization.swift")
             }
@@ -151,98 +220,118 @@
         }
     }
 
-    @Section(title: "9. UV를 빛나는 공간 오브젝트로 표현하기") {
+    @Section(title: "11. UV를 공간 오브젝트로 표현하기") {
         @ContentAndMedia {
-            UV Index는 게이지나 원형 문양 대신 실제 백색광이 빨강·주황·노랑·초록·파랑·보라 파장으로 퍼지는 스펙트럼으로 표현합니다. 광원 그룹은 최초 사용자 위치의 위쪽 한 월드 지점에 고정하고, 같은 광원점에서 45° 간격으로 방사되는 여덟 개의 경사진 투명 평면을 사용해 회전 방향에 따른 가시성 차이를 줄입니다. 크기는 약 1.65...2.0m로 화면의 약 3분의 2를 비추며, UV가 강할수록 낮게 시작한 불투명도가 올라갑니다.
+            UV Index는 백색광이 여러 색의 파장으로 퍼지는 빛으로 표현합니다. PNG 이미지 대신 RealityKit `CustomMaterial`과 Metal surface shader가 평면의 UV 좌표만으로 빔 모양, 스펙트럼 색과 투명도를 매 프레임 계산합니다. 광원 그룹은 최초 사용자 위치 위의 한 월드 지점에 고정하고, 같은 광원점에서 방사되는 여덟 개의 경사진 투명 평면을 사용합니다.
 
-            @Image(source: "uv-spectrum.png", alt: "투명 배경에서 백색광이 여러 색의 스펙트럼으로 퍼지는 자외선 디자인")
+            @Image(source: "uv-visualization.svg", alt: "RealityKit 평면의 UV 좌표를 Metal 셰이더가 빛의 색과 투명도로 바꾸는 구조")
         }
         @Steps {
             @Step {
-                `UVSpectrum.imageset` 텍스처를 사용자 위 1.45m의 같은 광원점에서 45° 간격으로 내려오는 여덟 평면 메시와 투명 재질에 적용합니다.
+                새 Metal 파일에서 `[[visible]]` surface shader를 만듭니다. `uv0()`은 평면의 가로·세로 좌표를 0...1로 제공합니다. 중앙에서 가장자리까지의 거리를 `smoothstep`으로 잘라 삼각형 빔을 만들고, 위치에 따라 RGB 값을 계산합니다.
+
+                @Code(name: "UVBeamShader.metal", file: "07-UVBeamShader.metal")
             }
             @Step {
-                UV Index로 크기와 광량을 계산하고 광원 그룹을 사용자 바로 위 월드 좌표에 둡니다.
+                Swift에서 기본 Metal 라이브러리의 `uvBeamSurface`를 찾아 `CustomMaterial`에 연결합니다. `lightingModel: .unlit`은 실제 조명과 관계없이 계산한 색을 그대로 보여 줍니다.
+            }
+            @Step {
+                UV Index를 0...1로 정규화하고 `material.custom.value`에 세기와 투명도를 담습니다. Metal에서는 같은 값을 `custom_parameter()`로 읽습니다. `set_base_color`는 색, `set_opacity`는 투명도를 결정하며 `uniforms().time()`으로 미세한 빛 떨림을 만듭니다.
+            }
+            @Step {
+                같은 재질의 평면 여덟 개를 사용자 위 1.45m의 한 점에서 45° 간격으로 펼칩니다. `faceCulling = .none`으로 평면 양쪽에서 보이게 하고, 셰이더 생성에 실패하면 이미지 없는 단색 `UnlitMaterial`로 대체합니다.
 
                 @Code(name: "UVVisualization.swift", file: "07-UVVisualization.swift")
             }
         }
     }
 
-    @Section(title: "10. 시각화를 자동 배치하고 움직이기") {
+    @Section(title: "12. 자동 배치와 화면 연결하기") {
         @ContentAndMedia {
-            데이터와 정상 추적 상태가 모두 준비되면 버튼 없이 월드 공간에 콘텐츠를 자동 배치합니다. `SceneEvents.Update`를 구독해 먼지는 현재 바람으로 이동시키면서 항상 카메라를 향하게 하고, UV 평면들은 함께 미세하게 맥동시킵니다. 새 데이터를 받으면 풍향과 풍속도 함께 갱신합니다.
+            데이터와 정상 추적 상태가 모두 준비되면 월드 공간에 콘텐츠를 자동 배치합니다. `SceneEvents.Update`에서 먼지를 이동시키고 UV 평면을 맥동시킵니다. 상단에는 세 수치와 Open-Meteo·CAMS 출처, 하단에는 새로고침만 둡니다.
 
-            @Image(source: "air-ar-hero.svg", alt: "공간에 자동 배치된 환경 오브젝트")
+            @Image(source: "air-ar-hero.svg", alt: "공간에 자동 배치된 환경 오브젝트와 상태 화면")
         }
         @Steps {
             @Step {
-                ARView Coordinator에 배치, 업데이트, 프레임 애니메이션을 연결합니다.
+                ARView Coordinator에 배치, 업데이트와 프레임 애니메이션을 연결합니다.
 
                 @Code(name: "AirQualityARView.swift", file: "08-AirQualityARView.swift")
             }
-        }
-    }
-
-    @Section(title: "11. 상단 정보와 새로고침만 남기기") {
-        @ContentAndMedia {
-            실제 앱의 조작을 최소화합니다. 카메라 위 상단에는 `온도 | 미세먼지 | UV`를 한 줄로 표시하고, 하단에는 새로고침 버튼 하나만 둡니다. 재배치와 초기화 버튼은 제거하고 AR 콘텐츠는 상태 변화에 맞춰 자동 관리합니다.
-
-            @Image(source: "air-ar-hero.svg", alt: "상단 정보와 하단 새로고침으로 단순화한 앱 화면")
-        }
-        @Steps {
             @Step {
-                SwiftUI 화면을 ARView, 컴팩트 정보 패널, 새로고침 버튼으로 구성합니다.
+                SwiftUI 화면을 ARView, 정보 패널과 새로고침 버튼으로 구성합니다.
 
                 @Code(name: "ContentView.swift", file: "09-ContentView.swift")
+            }
+            @Step {
+                Air Quality API는 CAMS 모델을 기반으로 하므로 Open-Meteo와 CAMS 출처를 함께 표시합니다.
             }
         }
     }
 
-    @Section(title: "12. 실제 기기에서 확인하기") {
+    @Section(title: "13. REST 서비스를 단위 테스트하기") {
         @ContentAndMedia {
-            시뮬레이터는 실제 카메라와 모션 센서를 이용한 월드 트래킹을 검증할 수 없습니다. 컴파일과 단위 테스트 뒤 ARKit 지원 iPhone 또는 iPad에서 권한, 추적 안정화, 월드 고정 상태와 입자 애니메이션을 확인합니다.
+            자동 테스트가 실제 인터넷에 의존하면 느리고 불안정합니다. `URLProtocol` 스텁으로 앱이 보낼 URL을 검사하고 원하는 HTTP 상태와 JSON을 즉시 반환합니다.
+
+            @Image(source: "air-ar-hero.svg", alt: "실제 서버 대신 URLProtocol 테스트 스텁이 응답하는 구조")
+        }
+        @Steps {
+            @Step {
+                성공 테스트에서 두 호스트, 좌표, `current` 변수, 풍속 단위를 검사하고 모든 값이 스냅샷에 매핑되는지 확인합니다.
+            }
+            @Step {
+                필수 JSON 필드를 빼서 디코딩 오류를, 상태 코드 503을 반환해 HTTP 오류를 확인합니다.
+            }
+            @Step {
+                `URLError.cancelled`가 앱의 취소 오류로 변환되는지 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "14. 실제 기기에서 확인하기") {
+        @ContentAndMedia {
+            시뮬레이터는 실제 카메라와 모션 센서를 이용한 월드 트래킹을 검증할 수 없습니다. 컴파일과 단위 테스트 뒤 ARKit 지원 iPhone 또는 iPad에서 권한, API 응답, 월드 고정과 입자 애니메이션을 확인합니다.
 
             @Image(source: "world-coordinate-diagram.svg", alt: "실제 기기에서 360도 월드 공간 효과를 확인하는 방법")
         }
         @Steps {
             @Step {
-                Signing Team을 선택하고 iOS 17 이상 실제 기기에서 앱을 실행합니다.
+                Signing Team을 선택하고 iOS 17 이상 실제 기기에서 실행한 뒤 위치와 카메라 권한을 허용합니다.
             }
             @Step {
-                카메라 권한을 허용하고 주변을 천천히 비춥니다. 추적이 정상화되면 시각화가 자동으로 나타나는지 확인합니다.
+                주변을 천천히 비추고 정상 추적 상태에서 세 수치와 시각화가 자동으로 나타나는지 확인합니다.
             }
             @Step {
-                제자리에서 기기를 360° 회전해 방향마다 비슷한 미세먼지 밀도가 보이는지 확인합니다. UV는 화면에 붙어 돌지 않고 최초 사용자 위치 위의 같은 월드 지점에 남는지 확인합니다.
+                새로고침 뒤 기온·PM2.5·UV와 먼지·바람이 함께 갱신되는지 확인합니다.
             }
             @Step {
-                새로고침 뒤 세 수치와 먼지·UV가 함께 갱신되고 Apple Weather, Open-Meteo와 CAMS 출처 링크가 표시되는지 확인합니다.
+                제자리에서 360° 회전해 먼지가 월드 공간에 남고 UV가 화면에 붙어 따라오지 않는지 확인합니다.
             }
         }
     }
 
     @Assessments {
         @MultipleChoice {
-            PM2.5 값이 높아졌음을 표가 아닌 공간 디자인으로 전달하는 구현은 무엇인가요?
+            REST API 요청에서 URL은 어떤 역할을 하나요?
             @Choice(isCorrect: true) {
-                낮은 불투명도의 황토색 먼지 스프라이트 개수를 늘리고 서로 다른 위상으로 부유시킨다.
+                서버에서 요청할 자원을 가리키는 엔드포인트이며, 앱은 그 주소에 HTTP 요청을 보낸다.
 
                 @Justification(reaction: "정답입니다!") {
-                    데이터가 입자의 밀도와 움직임이라는 시각적 분위기로 변환됩니다.
+                    REST API도 URL로 자원을 식별하며 응답 본문으로 JSON 같은 데이터를 받을 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                PM2.5 값을 표의 셀에만 출력한다.
+                URL을 사용하면 API가 아니고 반드시 웹 페이지만 받을 수 있다.
 
                 @Justification(reaction: "다시 생각해 보세요.") {
-                    이 앱의 핵심은 수치를 공간의 밀도로 느끼게 하는 것입니다.
+                    같은 URL 체계를 쓰더라도 서버는 요청에 따라 HTML 대신 JSON을 반환할 수 있습니다.
                 }
             }
             @Choice(isCorrect: false) {
-                값과 관계없이 항상 같은 먼지 이미지를 한 장 표시한다.
+                URL은 JSON 필드 이름을 Swift 속성으로 바꾸는 도구다.
 
                 @Justification(reaction: "다시 생각해 보세요.") {
-                    입자 양이 데이터와 함께 변해야 합니다.
+                    JSON 필드 매핑은 `Decodable`과 `CodingKeys`가 담당합니다.
                 }
             }
         }

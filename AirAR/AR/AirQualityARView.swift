@@ -101,7 +101,7 @@ struct AirQualityARView: UIViewRepresentable {
         private var visualizationRoot: Entity?
         private var sceneUpdateSubscription: (any Cancellable)?
         private var dustAnimations: [DustAnimation] = []
-        private var uvSpectrums: [Entity] = []
+        private var uvBeams: [Entity] = []
         private var elapsedTime: Float = 0
         private var windTravelDirection: SIMD2<Float> = .zero
         private var windVisualSpeed: Float = 0
@@ -176,18 +176,14 @@ struct AirQualityARView: UIViewRepresentable {
         @MainActor
         private func collectAnimatedEntities(in root: Entity, snapshot: AirQualitySnapshot) {
             dustAnimations.removeAll(keepingCapacity: true)
-            uvSpectrums.removeAll(keepingCapacity: true)
+            uvBeams.removeAll(keepingCapacity: true)
             windTravelDirection = AirQualityVisualizationMapper.windTravelDirection(
                 forMeteorologicalDegrees: snapshot.windDirection
             )
             windVisualSpeed = AirQualityVisualizationMapper.visualWindSpeed(
                 forMetersPerSecond: snapshot.windSpeed
             )
-            if let pm25 = snapshot.pm25 {
-                dustFieldRadius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: pm25)
-            } else {
-                dustFieldRadius = 2.85
-            }
+            dustFieldRadius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: snapshot.pm25)
 
             func visit(_ entity: Entity) {
                 if entity.name.hasPrefix("DustParticle-") {
@@ -202,8 +198,8 @@ struct AirQualityARView: UIViewRepresentable {
                             speedVariation: speedVariation
                         )
                     )
-                } else if entity.name.hasPrefix("UVSpectrum-") {
-                    uvSpectrums.append(entity)
+                } else if entity.name.hasPrefix("UVBeam-") {
+                    uvBeams.append(entity)
                 }
                 entity.children.forEach(visit)
             }
@@ -260,8 +256,8 @@ struct AirQualityARView: UIViewRepresentable {
 
             if animationsEnabled {
                 let pulse = 1 + sin(elapsedTime * 1.35) * 0.035
-                uvSpectrums.forEach { spectrum in
-                    spectrum.scale = [pulse, pulse, pulse]
+                uvBeams.forEach { beam in
+                    beam.scale = [pulse, pulse, pulse]
                 }
             }
         }
@@ -273,7 +269,7 @@ struct AirQualityARView: UIViewRepresentable {
             activeAnchor = nil
             visualizationRoot = nil
             dustAnimations.removeAll()
-            uvSpectrums.removeAll(keepingCapacity: true)
+            uvBeams.removeAll(keepingCapacity: true)
             windTravelDirection = .zero
             windVisualSpeed = 0
             dustFieldRadius = 2.85
