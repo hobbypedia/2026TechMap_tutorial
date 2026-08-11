@@ -11,6 +11,10 @@ struct AirQualitySnapshot: Equatable, Sendable {
     let windSpeed: Double
     /// 바람이 불어오는 방향이며 정북을 0도로 한 시계 방향 각도입니다.
     let windDirection: Double
+    /// 조회한 위치에서 오늘 태양이 뜨는 절대 시각입니다.
+    let sunrise: Date?
+    /// 조회한 위치에서 오늘 태양이 지는 절대 시각입니다.
+    let sunset: Date?
     /// Weather와 Air Quality API 제공자인 Open-Meteo 출처입니다.
     let sourceURL: URL?
     /// 대기질 예측 기반 데이터인 Copernicus CAMS 출처입니다.
@@ -24,6 +28,8 @@ struct AirQualitySnapshot: Equatable, Sendable {
         uvIndex: Double,
         windSpeed: Double = 0,
         windDirection: Double = 0,
+        sunrise: Date? = nil,
+        sunset: Date? = nil,
         sourceURL: URL? = nil,
         airQualityModelSourceURL: URL? = nil
     ) {
@@ -34,8 +40,17 @@ struct AirQualitySnapshot: Equatable, Sendable {
         self.uvIndex = uvIndex
         self.windSpeed = windSpeed
         self.windDirection = windDirection
+        self.sunrise = sunrise
+        self.sunset = sunset
         self.sourceURL = sourceURL
         self.airQualityModelSourceURL = airQualityModelSourceURL
+    }
+
+    /// 현재 시각이 일출 이상, 일몰 미만이면 태양 시각화를 표시합니다.
+    /// 일출·일몰이 없는 테스트 또는 이전 데이터는 기존 동작을 유지하도록 낮으로 간주합니다.
+    func isSunVisible(at date: Date = Date()) -> Bool {
+        guard let sunrise, let sunset else { return true }
+        return date >= sunrise && date < sunset
     }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 
 /// 현재 대기 환경 데이터를 제공하는 서비스의 계약입니다.
 protocol AirQualityServiceProtocol: Sendable {
-    /// 지정한 좌표의 기온, PM2.5, UV Index와 지상 바람을 가져옵니다.
+    /// 지정한 좌표의 기온, PM2.5, UV Index, 지상 바람과 일출·일몰을 가져옵니다.
     /// - Parameters:
     ///   - latitude: 조회할 위도입니다.
     ///   - longitude: 조회할 경도입니다.

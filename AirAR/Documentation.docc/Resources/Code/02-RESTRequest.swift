@@ -7,6 +7,8 @@ components.queryItems = [
         name: "current",
         value: "temperature_2m,wind_speed_10m,wind_direction_10m"
     ),
+    URLQueryItem(name: "daily", value: "sunrise,sunset"),
+    URLQueryItem(name: "forecast_days", value: "1"),
     URLQueryItem(name: "wind_speed_unit", value: "ms"),
     URLQueryItem(name: "timezone", value: "auto")
 ]

@@ -7,13 +7,13 @@
 
     @Section(title: "1. 프로젝트와 권한 준비") {
         @ContentAndMedia {
-            iOS 17 SwiftUI 앱과 Unit Test Target을 준비합니다. 현재 좌표에는 Core Location, 공간 추적에는 카메라와 모션 센서를 사용하는 ARKit이 필요합니다.
+            iOS 18 SwiftUI 앱과 Unit Test Target을 준비합니다. 현재 좌표에는 Core Location, 공간 추적에는 카메라와 모션 센서를 사용하는 ARKit이 필요합니다. 미세먼지 표현에는 iOS 18부터 사용할 수 있는 RealityKit 파티클 이미터를 사용합니다.
 
             @Image(source: "air-ar-hero.svg", alt: "SwiftUI와 ARKit으로 구성된 앱 구조")
         }
         @Steps {
             @Step {
-                앱 Target과 테스트 Target의 배포 버전을 iOS 17로 맞추고 SwiftUI, ARKit, RealityKit을 연결합니다.
+                앱 Target과 테스트 Target의 배포 버전을 iOS 18로 맞추고 SwiftUI, ARKit, RealityKit을 연결합니다.
             }
             @Step {
                 `Info.plist`에 `NSCameraUsageDescription`과 `NSLocationWhenInUseUsageDescription`을 추가합니다.
@@ -50,12 +50,13 @@
 
     @Section(title: "3. 사용할 Open-Meteo 엔드포인트 정하기") {
         @ContentAndMedia {
-            한 API가 모든 값을 제공한다고 가정하지 말고 공식 문서에서 변수와 단위를 확인합니다. Weather Forecast API에서는 기온·풍속·풍향을, Air Quality API에서는 PM2.5·UV Index를 요청합니다.
+            한 API가 모든 값을 제공한다고 가정하지 말고 공식 문서에서 변수와 단위를 확인합니다. Weather Forecast API에서는 기온·풍속·풍향과 오늘의 일출·일몰을, Air Quality API에서는 PM2.5·UV Index를 요청합니다.
 
             ```text
             GET https://api.open-meteo.com/v1/forecast
               ?latitude={위도}&longitude={경도}
               &current=temperature_2m,wind_speed_10m,wind_direction_10m
+              &daily=sunrise,sunset&forecast_days=1
               &wind_speed_unit=ms&timezone=auto
 
             GET https://air-quality-api.open-meteo.com/v1/air-quality
@@ -73,7 +74,10 @@
                 `wind_speed_unit=ms`로 AR 이동 계산에 쓸 풍속 단위를 m/s로 고정합니다.
             }
             @Step {
-                `timezone=auto`로 좌표의 현지 시각을 받습니다. 좌표와 `current` 변수 이름은 공식 문서의 계약이므로 임의로 바꾸지 않습니다.
+                `daily=sunrise,sunset`과 `forecast_days=1`로 조회한 위치에서 오늘 태양이 뜨고 지는 시각만 요청합니다. Open-Meteo에서 `daily` 변수를 요청할 때는 `timezone`이 필요합니다.
+            }
+            @Step {
+                `timezone=auto`로 좌표의 현지 시각과 시간대 식별자를 받습니다. 좌표와 변수 이름은 공식 문서의 계약이므로 임의로 바꾸지 않습니다.
             }
         }
     }
@@ -86,12 +90,12 @@
         }
         @Steps {
             @Step {
-                위치, 측정 시각, 기온, PM2.5, UV, 풍속과 풍향을 담은 도메인 모델을 만듭니다.
+                위치, 측정 시각, 기온, PM2.5, UV, 풍속·풍향과 일출·일몰을 담은 도메인 모델을 만듭니다. `isSunVisible(at:)`은 일출 이상, 일몰 미만인지를 계산합니다.
 
                 @Code(name: "AirQualitySnapshot.swift", file: "01-AirQualitySnapshot.swift")
             }
             @Step {
-                실제 JSON의 `current` 중첩 구조와 필요한 필드만 `Decodable` 타입으로 선언합니다.
+                실제 JSON의 `current`, `daily`, `timezone`, `utc_offset_seconds` 구조와 필요한 필드만 `Decodable` 타입으로 선언합니다.
 
                 @Code(name: "OpenMeteoAPIResponse.swift", file: "02-OpenMeteoAPIResponse.swift")
             }
@@ -136,7 +140,7 @@
                 `JSONDecoder.decode(_:from:)`로 바이트 데이터인 `Data`를 `Decodable` 응답 DTO로 변환합니다.
             }
             @Step {
-                기상과 대기질 요청을 `async let`으로 시작해 네트워크 대기 시간을 겹치고, 두 결과가 모두 준비되면 하나의 스냅샷으로 합칩니다.
+                기상과 대기질 요청을 `async let`으로 시작해 네트워크 대기 시간을 겹칩니다. 현지 일출·일몰 문자열은 응답의 시간대로 절대 `Date`로 변환한 뒤 하나의 스냅샷으로 합칩니다.
 
                 @Code(name: "OpenMeteoEnvironmentService.swift", file: "02-OpenMeteoEnvironmentService.swift")
             }
@@ -201,54 +205,71 @@
 
     @Section(title: "10. PM2.5를 바람에 흐르는 입자로 표현하기") {
         @ContentAndMedia {
-            PM2.5 농도를 투명한 황토색 스프라이트 개수로 바꿉니다. 기상학적 풍향은 바람이 **불어오는** 방향이므로 180° 반대 방향을 먼지 진행 벡터로 사용하고, 풍속이 강할수록 빠르게 이동시킵니다.
+            iOS 18의 RealityKit `ParticleEmitterComponent`로 이미지 에셋 없이 먼지를 만듭니다. PM2.5 농도는 초당 생성량과 투명도로, 풍향은 진행 방향으로, 풍속은 이동 속도로 변환합니다. 기상학적 풍향은 바람이 **불어오는** 방향이므로 180° 반대 방향을 먼지 진행 벡터로 사용합니다.
 
-            @Image(source: "dust-particle.png", alt: "투명 배경의 황토색 미세먼지 입자")
+            @Image(source: "pm25-visualization.svg", alt: "RealityKit 파티클 이미터가 사용자 주변에 미세먼지를 생성하는 구조")
         }
         @Steps {
             @Step {
-                `DustParticle.imageset`을 투명도가 낮은 `UnlitMaterial`에 연결합니다.
+                빈 `Entity`에 `ParticleEmitterComponent`를 만들고 `emitterShape = .box`, `birthLocation = .volume`으로 설정합니다. `emitterShapeSize`를 사용자 주변 크기로 지정하면 한 점이 아니라 공간 전체에서 먼지가 태어납니다.
             }
             @Step {
-                PM2.5 값으로 입자 수를 정하고 사용자 주변 360°에 스프라이트를 생성합니다.
+                PM2.5 값으로 `mainEmitter.birthRate`와 알파를 정합니다. `lifeSpan`, `sizeVariation`, `opacityCurve = .gradualFadeInOut`은 크기와 수명을 흩뜨리고 먼지가 갑자기 나타나거나 사라지는 느낌을 줄입니다. `warmUp`은 배치 직후에도 공간이 이미 채워진 것처럼 보이게 합니다.
 
                 @Code(name: "PM25Visualization.swift", file: "06-PM25Visualization.swift")
             }
             @Step {
-                풍향과 풍속을 북쪽 기준 이동 벡터와 제한된 AR 속도로 변환하고 입자를 원형 영역 안에서 순환시킵니다.
+                `billboardMode = .billboard`와 색 변화만으로 입자를 그립니다. 따라서 먼지 PNG가 필요하지 않고, 작은 반투명 입자가 어느 카메라 방향에서도 보입니다.
+            }
+            @Step {
+                `noiseStrength`, `noiseScale`, `noiseAnimationSpeed`로 미세한 난류를 만들고, 풍향을 북쪽 기준 진행 벡터로 바꿔 `emissionDirection`에 넣습니다. 풍속은 눈으로 확인 가능한 범위로 제한해 `speed`에 전달합니다.
+            }
+            @Step {
+                파티클 시스템이 생성·이동·소멸과 카메라 정렬을 처리하므로, 수백 개의 `ModelEntity`를 만들거나 `SceneEvents.Update`에서 먼지를 하나씩 움직일 필요가 없습니다.
             }
         }
     }
 
     @Section(title: "11. UV를 공간 오브젝트로 표현하기") {
         @ContentAndMedia {
-            UV Index는 백색광이 여러 색의 파장으로 퍼지는 빛으로 표현합니다. PNG 이미지 대신 RealityKit `CustomMaterial`과 Metal surface shader가 평면의 UV 좌표만으로 빔 모양, 스펙트럼 색과 투명도를 매 프레임 계산합니다. 광원 그룹은 최초 사용자 위치 위의 한 월드 지점에 고정하고, 같은 광원점에서 방사되는 여덟 개의 경사진 투명 평면을 사용합니다.
+            UV Index는 사용자 위에서 내려오는 따뜻한 햇빛으로 표현합니다. PNG 이미지 대신 RealityKit `CustomMaterial`과 Metal surface shader가 빔과 태양 코로나의 모양, 중심 밝기와 투명도를 계산합니다. 현재 시각이 일출부터 일몰 사이일 때만 햇빛 그룹을 표시하고, 태양을 직접 올려다보면 별도의 화면 공간 레이어가 카메라 렌즈에서 생기는 것 같은 빛 번짐을 표시합니다.
 
-            @Image(source: "uv-visualization.svg", alt: "RealityKit 평면의 UV 좌표를 Metal 셰이더가 빛의 색과 투명도로 바꾸는 구조")
+            @Image(source: "uv-visualization.svg", alt: "RealityKit 태양과 빔을 화면 공간 렌즈 플레어로 투영하는 구조")
         }
         @Steps {
             @Step {
-                새 Metal 파일에서 `[[visible]]` surface shader를 만듭니다. `uv0()`은 평면의 가로·세로 좌표를 0...1로 제공합니다. 중앙에서 가장자리까지의 거리를 `smoothstep`으로 잘라 삼각형 빔을 만들고, 위치에 따라 RGB 값을 계산합니다.
+                새 Metal 파일에 `[[visible]]` surface shader 두 개를 만듭니다. `uvBeamSurface`는 `uv0()`를 `smoothstep`으로 잘라 위는 좁고 아래는 넓은 빔을 만듭니다. `sunCoronaSurface`는 중심에서의 거리와 각도로 흰 중심광, 금빛 후광과 길이가 다른 방사광을 계산합니다.
 
                 @Code(name: "UVBeamShader.metal", file: "07-UVBeamShader.metal")
             }
             @Step {
-                Swift에서 기본 Metal 라이브러리의 `uvBeamSurface`를 찾아 `CustomMaterial`에 연결합니다. `lightingModel: .unlit`은 실제 조명과 관계없이 계산한 색을 그대로 보여 줍니다.
+                Swift에서 기본 Metal 라이브러리의 `uvBeamSurface`와 `sunCoronaSurface`를 찾아 각각 `CustomMaterial`에 연결합니다. `lightingModel: .unlit`은 실제 조명과 관계없이 계산한 색을 그대로 보여 줍니다.
             }
             @Step {
-                UV Index를 0...1로 정규화하고 `material.custom.value`에 세기와 투명도를 담습니다. Metal에서는 같은 값을 `custom_parameter()`로 읽습니다. `set_base_color`는 색, `set_opacity`는 투명도를 결정하며 `uniforms().time()`으로 미세한 빛 떨림을 만듭니다.
+                UV Index를 0...1로 정규화하고 `material.custom.value`에 세기와 투명도를 담습니다. 평면 여덟 개를 겹치면 여러 색이 합성되어 흰 덩어리처럼 보이므로, 따뜻한 단색 평면 두 개만 90°로 교차합니다.
             }
             @Step {
-                같은 재질의 평면 여덟 개를 사용자 위 1.45m의 한 점에서 45° 간격으로 펼칩니다. `faceCulling = .none`으로 평면 양쪽에서 보이게 하고, 셰이더 생성에 실패하면 이미지 없는 단색 `UnlitMaterial`로 대체합니다.
+                사용자 위 2.4m에 밝은 `UnlitMaterial` 구와 코로나 평면을 같은 중심에 배치합니다. 매 프레임 코로나가 카메라를 향하게 하므로 어느 방향에서도 둥근 발광으로 보이고, UV가 강할수록 구·코로나·빔이 조금 커지고 밝아집니다. 셰이더 생성에 실패해도 이미지 없는 단색 `UnlitMaterial`로 빔을 계속 표시합니다.
 
                 @Code(name: "UVVisualization.swift", file: "07-UVVisualization.swift")
+            }
+            @Step {
+                `snapshot.isSunVisible(at: Date())`를 매 프레임 확인해 `SunlightGroup.isEnabled`를 전환합니다. 밤에는 태양 구, 코로나와 빔을 함께 숨기고 렌즈 플레어도 즉시 제거합니다. 따라서 앱을 켠 채 일몰을 지나도 새 요청 없이 화면이 밤 상태로 바뀝니다.
+            }
+            @Step {
+                매 프레임 `ARView.project()`로 태양의 월드 좌표를 화면 좌표로 바꿉니다. 카메라 전방 벡터와 태양 방향의 내적이 1에 가까워질수록 플레어 강도를 높입니다.
+
+                @Code(name: "SolarLensFlare.swift", file: "07-SolarLensFlare.swift")
+            }
+            @Step {
+                `SolarLensFlareView`는 Core Animation의 방사형 그라디언트와 도형 레이어만 사용합니다. 정면에서는 주변 노출을 낮추고 태양 코어, 청백색 헤일로, 방사광 18개, 동심원 3개와 화면 중심 반대편으로 이어지는 렌즈 고스트 5개를 표시합니다. 태양이 화면 정중앙에 와도 고스트가 한 점에 겹치지 않도록 최소 광학 축을 유지하며, 화면 밖으로 나가면 모두 즉시 숨깁니다.
             }
         }
     }
 
     @Section(title: "12. 자동 배치와 화면 연결하기") {
         @ContentAndMedia {
-            데이터와 정상 추적 상태가 모두 준비되면 월드 공간에 콘텐츠를 자동 배치합니다. `SceneEvents.Update`에서 먼지를 이동시키고 UV 평면을 맥동시킵니다. 상단에는 세 수치와 Open-Meteo·CAMS 출처, 하단에는 새로고침만 둡니다.
+            데이터와 정상 추적 상태가 모두 준비되면 월드 공간에 콘텐츠를 자동 배치합니다. 먼지는 `ParticleEmitterComponent`가 스스로 갱신하고, `SceneEvents.Update`에서는 태양의 표시 시각, 코로나 방향, 빔 맥동과 렌즈 플레어만 갱신합니다. 상단에는 세 수치와 Open-Meteo·CAMS 출처, 하단에는 새로고침만 둡니다.
 
             @Image(source: "air-ar-hero.svg", alt: "공간에 자동 배치된 환경 오브젝트와 상태 화면")
         }
@@ -277,7 +298,7 @@
         }
         @Steps {
             @Step {
-                성공 테스트에서 두 호스트, 좌표, `current` 변수, 풍속 단위를 검사하고 모든 값이 스냅샷에 매핑되는지 확인합니다.
+                성공 테스트에서 두 호스트, 좌표, `current`·`daily` 변수, 풍속 단위와 시간대를 검사하고 모든 값이 스냅샷에 매핑되는지 확인합니다. 일출 직전·일출·일몰 직전·일몰 경계의 태양 표시 여부도 검증합니다.
             }
             @Step {
                 필수 JSON 필드를 빼서 디코딩 오류를, 상태 코드 503을 반환해 HTTP 오류를 확인합니다.
@@ -296,7 +317,7 @@
         }
         @Steps {
             @Step {
-                Signing Team을 선택하고 iOS 17 이상 실제 기기에서 실행한 뒤 위치와 카메라 권한을 허용합니다.
+                Signing Team을 선택하고 iOS 18 이상 실제 기기에서 실행한 뒤 위치와 카메라 권한을 허용합니다.
             }
             @Step {
                 주변을 천천히 비추고 정상 추적 상태에서 세 수치와 시각화가 자동으로 나타나는지 확인합니다.

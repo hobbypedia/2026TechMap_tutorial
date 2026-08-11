@@ -129,6 +129,8 @@ final class AirQualityViewModel: ObservableObject {
                     uvIndex: response.uvIndex,
                     windSpeed: response.windSpeed,
                     windDirection: response.windDirection,
+                    sunrise: response.sunrise,
+                    sunset: response.sunset,
                     sourceURL: response.sourceURL,
                     airQualityModelSourceURL: response.airQualityModelSourceURL
                 )

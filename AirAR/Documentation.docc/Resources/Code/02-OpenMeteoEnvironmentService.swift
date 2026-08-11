@@ -16,6 +16,19 @@ async let weather = request(OpenMeteoWeatherResponse.self, from: weatherURL)
 async let air = request(OpenMeteoAirQualityResponse.self, from: airQualityURL)
 let (weatherResponse, airResponse) = try await (weather, air)
 
+let formatter = DateFormatter()
+formatter.locale = Locale(identifier: "en_US_POSIX")
+formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
+formatter.timeZone = TimeZone(identifier: weatherResponse.timezone)
+    ?? TimeZone(secondsFromGMT: weatherResponse.utcOffsetSeconds)
+
+guard let sunriseText = weatherResponse.daily.sunrise.first,
+      let sunsetText = weatherResponse.daily.sunset.first,
+      let sunrise = formatter.date(from: sunriseText),
+      let sunset = formatter.date(from: sunsetText) else {
+    throw AirQualityServiceError.decodingFailed
+}
+
 return AirQualitySnapshot(
     locationName: "현재 위치",
     measuredAt: airResponse.current.time,
@@ -23,5 +36,7 @@ return AirQualitySnapshot(
     pm25: airResponse.current.pm25,
     uvIndex: airResponse.current.uvIndex,
     windSpeed: weatherResponse.current.windSpeed,
-    windDirection: weatherResponse.current.windDirection
+    windDirection: weatherResponse.current.windDirection,
+    sunrise: sunrise,
+    sunset: sunset
 )

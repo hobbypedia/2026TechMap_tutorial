@@ -1,27 +1,27 @@
 # AirAR
 
-기기의 현재 위치를 Open-Meteo REST API에 전달해 기온, PM2.5, UV Index, 지상 풍속·풍향을 받아오고 RealityKit으로 공간에 시각화하는 iOS 17 교육용 앱입니다.
+기기의 현재 위치를 Open-Meteo REST API에 전달해 기온, PM2.5, UV Index, 지상 풍속·풍향과 일출·일몰을 받아오고 RealityKit으로 공간에 시각화하는 iOS 18 교육용 앱입니다.
 
 > AR 기능은 카메라와 6DoF 월드 트래킹이 필요합니다. 시뮬레이터가 아닌 ARKit 지원 iPhone 또는 iPad에서 최종 확인하세요.
 
 ## 완성 화면과 사용자 흐름
 
-앱을 열면 상단에 `온도 | 미세먼지 | UV`가 표시됩니다. 황토색 먼지는 PM2.5 농도에 따라 최초 사용자 위치의 360° 주변에 분포하고, 바람이 불어가는 방향으로 흐릅니다. 이미지 없이 Metal 셰이더가 그린 UV 빔은 그 위치 위쪽의 월드 좌표에 고정됩니다.
+앱을 열면 상단에 `온도 | 미세먼지 | UV`가 표시됩니다. 황토색 먼지는 PM2.5 농도에 따라 최초 사용자 위치의 360° 주변에 분포하고, 바람이 불어가는 방향으로 흐릅니다. 이미지 없이 Metal 셰이더가 그린 햇빛, 태양 구와 발광 코로나는 그 위치 위쪽의 월드 좌표에 고정됩니다. 조회 위치의 현지 시각이 일출부터 일몰 사이일 때만 태양과 렌즈 플레어가 나타납니다.
 
 ## 기술 스택
 
 - Swift 5, SwiftUI, async/await, URLSession, Codable
 - Open-Meteo Weather Forecast API와 Air Quality API
-- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`와 `CustomMaterial`
-- Metal surface shader를 이용한 절차적 UV 빔 렌더링
-- iOS 17.0 이상, Xcode 15 이상
+- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`, `ParticleEmitterComponent`와 `CustomMaterial`
+- Metal surface shader를 이용한 절차적 UV 빔·태양 코로나 렌더링
+- iOS 18.0 이상, Xcode 16 이상
 - XCTest, DocC, GitHub Actions와 GitHub Pages
 
 ## 데이터 흐름
 
 ```text
 Core Location → 현재 좌표/지역 이름
-                 ├─ GET /v1/forecast → 기온·풍속·풍향
+                 ├─ GET /v1/forecast → 기온·풍속·풍향·일출·일몰
                  └─ GET /v1/air-quality → PM2.5·UV
                                       ↓
                          OpenMeteoEnvironmentService
@@ -33,11 +33,17 @@ Core Location → 현재 좌표/지역 이름
 
 두 요청은 `async let`으로 동시에 실행됩니다. 서버의 JSON 구조는 `OpenMeteoWeatherResponse`와 `OpenMeteoAirQualityResponse`가 담당하고, 화면과 AR은 API 형식을 모르는 `AirQualitySnapshot`만 사용합니다.
 
-## 이미지 없이 UV 빔 그리기
+## 이미지 없이 미세먼지 만들기
 
-UV 시각화는 PNG 텍스처를 사용하지 않습니다. RealityKit 평면의 0...1 `UV` 좌표를 Metal surface shader가 읽어 중앙에서 아래로 넓어지는 마스크를 만들고, 가로 위치를 스펙트럼 색으로 변환합니다. Swift는 `CustomMaterial.custom.value`를 통해 정규화된 UV Index와 투명도를 셰이더에 전달합니다. 따라서 UV 수치가 높을수록 빔이 커지고 선명해지며, 에셋을 교체하지 않아도 수식만으로 모양과 색을 조절할 수 있습니다.
+iOS 18의 RealityKit `ParticleEmitterComponent`가 사용자 주변의 상자 부피에서 작은 입자를 계속 생성합니다. 별도의 먼지 PNG나 수백 개의 `ModelEntity`를 만들 필요가 없습니다. PM2.5 농도는 초당 생성량(`birthRate`)과 투명도로 바뀌고, 풍향은 입자가 진행할 벡터, 풍속은 이동 속도가 됩니다.
 
-셰이더는 RealityKit이 제공하는 시간 값으로 아주 약한 떨림도 계산합니다. Metal 라이브러리를 불러오지 못하는 환경에서는 단색 `UnlitMaterial`로 대체되어 AR 오브젝트 자체는 계속 표시됩니다.
+`lifeSpan`, `sizeVariation`, `opacityCurve`로 입자마다 크기와 수명을 다르게 하고 자연스럽게 나타났다 사라지게 합니다. `noiseStrength`, `noiseScale`, `noiseAnimationSpeed`는 직선 이동에 작은 난류를 더합니다. `billboardMode = .billboard`를 사용하면 텍스처 없이 생성된 입자가 카메라를 향하므로 어느 방향에서 보아도 먼지처럼 읽힙니다. 이 API가 iOS 18부터 제공되므로 앱의 최소 지원 버전도 iOS 18입니다.
+
+## 이미지 없이 햇빛과 렌즈 플레어 그리기
+
+UV 시각화는 PNG 텍스처를 사용하지 않습니다. RealityKit 평면의 0...1 `UV` 좌표를 Metal surface shader가 읽어 중앙에서 아래로 넓어지는 마스크를 만들고, 중심은 따뜻한 흰색, 가장자리는 옅은 황색으로 계산합니다. 별도의 코로나 셰이더는 태양 중심에서의 거리와 각도로 흰 중심광, 금빛 후광과 불규칙한 방사광을 만듭니다. 평면 여덟 개가 겹쳐 흰색으로 뭉치던 방식 대신 빔 두 개만 90°로 교차합니다. Swift는 `CustomMaterial.custom.value`를 통해 정규화된 UV Index와 투명도를 셰이더에 전달합니다.
+
+태양 구의 월드 좌표는 `ARView.project()`로 화면에 투영합니다. 카메라가 태양을 정면으로 바라볼수록 `SolarLensFlareView`가 주변 노출을 조금 낮추고, Core Animation 레이어로 태양 코어, 헤일로, 방사광, 동심원과 렌즈 고스트를 표시합니다. 태양이 화면 중앙에 있어도 최소 광학 축을 유지해 고스트가 서로 포개지지 않습니다. 매 프레임 현재 시각과 일출·일몰을 비교해 밤에는 태양 그룹과 렌즈 플레어를 숨깁니다. 이 효과도 이미지 에셋을 사용하지 않습니다. Metal 라이브러리를 불러오지 못하는 환경에서는 빔만 단색 `UnlitMaterial`로 대체됩니다.
 
 ## API와 REST API
 
@@ -62,6 +68,8 @@ GET https://api.open-meteo.com/v1/forecast
     ?latitude={현재 위도}
     &longitude={현재 경도}
     &current=temperature_2m,wind_speed_10m,wind_direction_10m
+    &daily=sunrise,sunset
+    &forecast_days=1
     &wind_speed_unit=ms
     &timezone=auto
 ```
@@ -69,6 +77,8 @@ GET https://api.open-meteo.com/v1/forecast
 - `temperature_2m`: 지상 2m 기온(°C)
 - `wind_speed_10m`: 지상 10m 풍속(`wind_speed_unit=ms`이므로 m/s)
 - `wind_direction_10m`: 북쪽 0° 기준 풍향
+- `sunrise`, `sunset`: 조회 위치의 현지 일출·일몰 ISO 8601 시각
+- `timezone=auto`: 일출·일몰을 좌표의 현지 시간대로 반환
 
 ### 2. 대기질 API
 
@@ -94,8 +104,9 @@ Open-Meteo의 공개 비상업용 API는 이 요청에서 API 키가 필수가 �
 3. `URLSession.data(from:)`으로 비동기 `GET` 요청을 보냅니다.
 4. `HTTPURLResponse.statusCode`가 `200...299`인지 검사합니다.
 5. `JSONDecoder`로 JSON을 응답 DTO로 변환합니다.
-6. 두 API 결과를 `AirQualitySnapshot` 하나로 조합합니다.
-7. 취소, 네트워크, HTTP, 디코딩 오류를 화면용 오류로 변환합니다.
+6. 현지 일출·일몰 문자열을 응답 시간대로 해석해 절대 `Date`로 변환합니다.
+7. 두 API 결과를 `AirQualitySnapshot` 하나로 조합합니다.
+8. 취소, 네트워크, HTTP, 디코딩 오류를 화면용 오류로 변환합니다.
 
 예를 들어 서버의 `pm2_5`는 Swift 이름 규칙에 맞는 `pm25`로 매핑합니다.
 
@@ -133,7 +144,7 @@ AirARTests/
 
 1. `AirAR.xcodeproj`를 Xcode에서 엽니다.
 2. AirAR Target의 Signing Team을 선택합니다.
-3. iOS 17 이상을 실행하는 ARKit 지원 실제 기기를 연결합니다.
+3. iOS 18 이상을 실행하는 ARKit 지원 실제 기기를 연결합니다.
 4. 앱을 실행하고 `앱을 사용하는 동안` 위치 권한과 카메라 권한을 허용합니다.
 5. 주변을 천천히 비추면 정상 추적 상태에서 시각화가 자동 배치됩니다.
 
