@@ -7,13 +7,13 @@
 
     @Section(title: "1. 프로젝트와 권한 준비") {
         @ContentAndMedia {
-            iOS 17 SwiftUI 앱과 Unit Test Target을 준비합니다. ARKit은 카메라와 모션 센서로 공간을 추적하므로 `NSCameraUsageDescription`이 필요합니다. 현재 지역의 데이터를 조회하려면 `NSLocationWhenInUseUsageDescription`도 필요합니다.
+            iOS 18 SwiftUI 앱과 Unit Test Target을 준비합니다. ARKit은 카메라와 모션 센서로 공간을 추적하므로 `NSCameraUsageDescription`이 필요합니다. 현재 지역의 데이터를 조회하려면 `NSLocationWhenInUseUsageDescription`도 필요합니다.
 
             @Image(source: "air-ar-hero.svg", alt: "SwiftUI와 ARKit으로 구성된 앱 구조")
         }
         @Steps {
             @Step {
-                앱 Target과 테스트 Target의 배포 버전을 iOS 17로 맞추고 SwiftUI, ARKit, RealityKit을 연결합니다.
+                앱 Target과 테스트 Target의 배포 버전을 iOS 18로 맞추고 SwiftUI, ARKit, RealityKit을 연결합니다.
             }
             @Step {
                 `Info.plist`에 카메라와 앱 사용 중 위치가 환경 데이터를 조회하고 공간에 표시하는 데 사용된다는 설명을 추가합니다.
@@ -109,21 +109,21 @@
 
     @Section(title: "7. 미세먼지를 떠다니는 황토색 입자로 표현하기") {
         @ContentAndMedia {
-            PM2.5를 투명한 황토색 먼지 스프라이트 개수로 바꿉니다. 입자 지름은 이전 대비 절반으로 줄이고 개수는 4배인 80...1,440개로 늘려 총 투영 면적을 비슷하게 유지합니다. 풍향은 바람이 불어오는 방향이므로 180도 반대인 먼지 진행 벡터로 변환하고, 풍속이 강할수록 빠르게 이동시킵니다. 원형 영역을 벗어난 입자는 바람 반대편에서 다시 유입되며 기존 거리별 부유 속도와 입자별 편차도 유지합니다.
+            PM2.5를 RealityKit `ParticleEmitterComponent`의 초당 생성량으로 바꿉니다. 별도 이미지 에셋을 지정하지 않고 기본 원형 파티클을 황토색으로 표현합니다. 풍향은 바람이 불어오는 방향이므로 180도 반대인 방출 벡터로 변환하고, 풍속이 강할수록 빠르게 이동시킵니다.
 
             @Image(source: "dust-particle.png", alt: "투명 배경의 황토색 미세먼지 입자 디자인")
         }
         @Steps {
             @Step {
-                `DustParticle.imageset`을 불러와 투명도가 낮은 `UnlitMaterial`에 연결합니다.
+                하나의 Entity에 `ParticleEmitterComponent`를 연결하고 구형 방출 영역 내부에서 파티클이 생성되도록 설정합니다.
             }
             @Step {
-                PM2.5 값으로 입자 수를 정하고 방위각과 반경을 이용해 사용자 주변 360° 위치에 스프라이트를 생성합니다.
+                PM2.5 값으로 생성률과 방출 영역을 정하고 기본 파티클이 사용자 주변 360° 공간에 나타나도록 합니다.
 
                 @Code(name: "PM25Visualization.swift", file: "06-PM25Visualization.swift")
             }
             @Step {
-                풍향과 풍속을 북쪽 기준 이동 벡터와 제한된 AR 속도로 변환하고 입자를 원형 영역 안에서 순환시킵니다.
+                풍향과 풍속을 북쪽 기준 방출 벡터와 제한된 AR 속도로 변환합니다.
             }
         }
     }
@@ -148,13 +148,13 @@
 
     @Section(title: "9. 시각화를 자동 배치하고 움직이기") {
         @ContentAndMedia {
-            데이터와 정상 추적 상태가 모두 준비되면 버튼 없이 월드 공간에 콘텐츠를 자동 배치합니다. `SceneEvents.Update`를 구독해 먼지는 현재 바람으로 이동시키면서 항상 카메라를 향하게 하고, UV 평면들은 함께 미세하게 맥동시킵니다. 새 데이터를 받으면 풍향과 풍속도 함께 갱신합니다.
+            데이터와 정상 추적 상태가 모두 준비되면 버튼 없이 월드 공간에 콘텐츠를 자동 배치합니다. 먼지는 RealityKit의 파티클 시뮬레이션으로 움직이고, `SceneEvents.Update`에서는 UV 평면들을 함께 미세하게 맥동시킵니다. 새 데이터를 받으면 생성률, 풍향과 풍속도 함께 갱신합니다.
 
             @Image(source: "air-ar-hero.svg", alt: "공간에 자동 배치된 환경 오브젝트")
         }
         @Steps {
             @Step {
-                ARView Coordinator에 배치, 업데이트, 프레임 애니메이션을 연결합니다.
+                ARView Coordinator에 배치, 업데이트, 파티클 재생 상태와 UV 프레임 애니메이션을 연결합니다.
 
                 @Code(name: "AirQualityARView.swift", file: "08-AirQualityARView.swift")
             }
@@ -184,7 +184,7 @@
         }
         @Steps {
             @Step {
-                Signing Team을 선택하고 iOS 17 이상 실제 기기에서 앱을 실행합니다.
+                Signing Team을 선택하고 iOS 18 이상 실제 기기에서 앱을 실행합니다.
             }
             @Step {
                 카메라 권한을 허용하고 주변을 천천히 비춥니다. 추적이 정상화되면 시각화가 자동으로 나타나는지 확인합니다.
@@ -202,7 +202,7 @@
         @MultipleChoice {
             PM2.5 값이 높아졌음을 표가 아닌 공간 디자인으로 전달하는 구현은 무엇인가요?
             @Choice(isCorrect: true) {
-                낮은 불투명도의 황토색 먼지 스프라이트 개수를 늘리고 서로 다른 위상으로 부유시킨다.
+                낮은 불투명도의 황토색 기본 파티클 생성률을 높여 공간의 밀도를 늘린다.
 
                 @Justification(reaction: "정답입니다!") {
                     데이터가 입자의 밀도와 움직임이라는 시각적 분위기로 변환됩니다.

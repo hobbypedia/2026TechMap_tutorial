@@ -85,27 +85,16 @@ struct AirQualityARView: UIViewRepresentable {
     }
 
     final class Coordinator: NSObject, ARSessionDelegate {
-        private struct DustAnimation {
-            let entity: Entity
-            let base: SIMD3<Float>
-            let phase: Float
-            let speedVariation: Float
-            var localElapsedTime: Float = 0
-            var windTravelDistance: Float = 0
-        }
-
         private weak var arView: ARView?
         private let controller: ARExperienceController
         private let entityFactory = AirQualityEntityFactory()
         private var activeAnchor: AnchorEntity?
         private var visualizationRoot: Entity?
         private var sceneUpdateSubscription: (any Cancellable)?
-        private var dustAnimations: [DustAnimation] = []
+        private var particleEmitters: [Entity] = []
         private var uvSpectrums: [Entity] = []
         private var elapsedTime: Float = 0
-        private var windTravelDirection: SIMD2<Float> = .zero
-        private var windVisualSpeed: Float = 0
-        private var dustFieldRadius: Float = 2.85
+        private var appliedAnimationsEnabled: Bool?
         var animationsEnabled: Bool
         var stateDidChange: (ARSessionState) -> Void
 
@@ -155,7 +144,7 @@ struct AirQualityARView: UIViewRepresentable {
             arView.scene.addAnchor(anchor)
             activeAnchor = anchor
             visualizationRoot = root
-            collectAnimatedEntities(in: root, snapshot: snapshot)
+            collectAnimatedEntities(in: root)
             controller.setPlaced(true)
         }
 
@@ -170,96 +159,48 @@ struct AirQualityARView: UIViewRepresentable {
         private func update(_ snapshot: AirQualitySnapshot) {
             guard let visualizationRoot else { return }
             entityFactory.updateVisualization(root: visualizationRoot, with: snapshot)
-            collectAnimatedEntities(in: visualizationRoot, snapshot: snapshot)
+            collectAnimatedEntities(in: visualizationRoot)
         }
 
         @MainActor
-        private func collectAnimatedEntities(in root: Entity, snapshot: AirQualitySnapshot) {
-            dustAnimations.removeAll(keepingCapacity: true)
+        private func collectAnimatedEntities(in root: Entity) {
+            particleEmitters.removeAll(keepingCapacity: true)
             uvSpectrums.removeAll(keepingCapacity: true)
-            windTravelDirection = AirQualityVisualizationMapper.windTravelDirection(
-                forMeteorologicalDegrees: snapshot.windDirection
-            )
-            windVisualSpeed = AirQualityVisualizationMapper.visualWindSpeed(
-                forMetersPerSecond: snapshot.windSpeed
-            )
-            dustFieldRadius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: snapshot.pm25)
 
             func visit(_ entity: Entity) {
-                if entity.name.hasPrefix("DustParticle-") {
-                    let index = dustAnimations.count
-                    let phase = Float(index) * 0.73
-                    let speedVariation = 0.82 + Float((index * 37) % 100) / 100 * 0.36
-                    dustAnimations.append(
-                        DustAnimation(
-                            entity: entity,
-                            base: entity.position,
-                            phase: phase,
-                            speedVariation: speedVariation
-                        )
-                    )
+                if entity.components.has(ParticleEmitterComponent.self) {
+                    particleEmitters.append(entity)
                 } else if entity.name.hasPrefix("UVSpectrum-") {
                     uvSpectrums.append(entity)
                 }
                 entity.children.forEach(visit)
             }
             visit(root)
+            appliedAnimationsEnabled = nil
+            updateParticleSimulationIfNeeded()
         }
 
         @MainActor
         private func animate(deltaTime: Float) {
-            guard let arView else { return }
+            updateParticleSimulationIfNeeded()
             if animationsEnabled {
                 elapsedTime += min(deltaTime, 0.1)
-            }
-
-            let cameraPosition = arView.cameraTransform.translation
-            for index in dustAnimations.indices {
-                var item = dustAnimations[index]
-                var position = item.base
-                if let parent = item.entity.parent {
-                    let localCameraPosition = parent.convert(position: cameraPosition, from: nil)
-                    if animationsEnabled {
-                        let distance = simd_distance(localCameraPosition, item.entity.position)
-                        let speed = AirQualityVisualizationMapper.animationSpeed(
-                            forDistance: distance,
-                            variation: item.speedVariation
-                        )
-                        let frameDuration = min(deltaTime, 0.1)
-                        item.localElapsedTime += frameDuration * speed
-                        item.windTravelDistance += frameDuration
-                            * windVisualSpeed
-                            * item.speedVariation
-                        position = AirQualityVisualizationMapper.windDisplacedPosition(
-                            base: item.base,
-                            travelDistance: item.windTravelDistance,
-                            direction: windTravelDirection,
-                            fieldRadius: dustFieldRadius
-                        )
-                        dustAnimations[index] = item
-                        position.x += sin(item.localElapsedTime * 0.55 + item.phase) * 0.018
-                        position.y += sin(item.localElapsedTime * 0.9 + item.phase * 1.7) * 0.025
-                        position.z += cos(item.localElapsedTime * 0.4 + item.phase) * 0.008
-                    }
-                    item.entity.position = position
-                    let direction = localCameraPosition - position
-                    if simd_length_squared(direction) > 0.0001 {
-                        item.entity.orientation = simd_quatf(
-                            from: [0, 0, 1],
-                            to: simd_normalize(direction)
-                        )
-                    }
-                } else {
-                    item.entity.position = position
-                }
-            }
-
-            if animationsEnabled {
                 let pulse = 1 + sin(elapsedTime * 1.35) * 0.035
                 uvSpectrums.forEach { spectrum in
                     spectrum.scale = [pulse, pulse, pulse]
                 }
             }
+        }
+
+        @MainActor
+        private func updateParticleSimulationIfNeeded() {
+            guard appliedAnimationsEnabled != animationsEnabled else { return }
+            for entity in particleEmitters {
+                guard var component = entity.components[ParticleEmitterComponent.self] else { continue }
+                component.simulationState = animationsEnabled ? .play : .pause
+                entity.components.set(component)
+            }
+            appliedAnimationsEnabled = animationsEnabled
         }
 
         /// 월드 공간에 배치된 환경 데이터 시각화를 제거합니다.
@@ -268,11 +209,9 @@ struct AirQualityARView: UIViewRepresentable {
             activeAnchor?.removeFromParent()
             activeAnchor = nil
             visualizationRoot = nil
-            dustAnimations.removeAll()
+            particleEmitters.removeAll()
             uvSpectrums.removeAll(keepingCapacity: true)
-            windTravelDirection = .zero
-            windVisualSpeed = 0
-            dustFieldRadius = 2.85
+            appliedAnimationsEnabled = nil
             elapsedTime = 0
             controller.setPlaced(false)
         }
