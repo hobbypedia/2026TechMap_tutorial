@@ -8,12 +8,8 @@ ZStack {
 
     VStack {
         AirQualityStatusPanel(
-            locationName: viewModel.locationName,
-            metrics: viewModel.metrics,
-            isLoading: viewModel.isLoading,
-            errorMessage: viewModel.errorMessage,
-            sourceURL: viewModel.snapshot?.sourceURL,
-            airQualityModelSourceURL: viewModel.snapshot?.airQualityModelSourceURL
+            loadState: viewModel.loadState,
+            snapshot: viewModel.snapshot
         )
         Spacer()
         Button("새로고침", systemImage: "arrow.clockwise") {

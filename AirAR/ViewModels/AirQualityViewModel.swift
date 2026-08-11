@@ -14,7 +14,7 @@ final class AirQualityViewModel: ObservableObject {
     private var requestGeneration = 0
 
     init(
-        service: any AirQualityServiceProtocol = OpenMeteoEnvironmentService(),
+        service: any AirQualityServiceProtocol = OpenMeteoAirQualityService(),
         locationService: (any LocationServiceProtocol)? = nil
     ) {
         self.service = service
@@ -128,11 +128,7 @@ final class AirQualityViewModel: ObservableObject {
                     pm25: response.pm25,
                     uvIndex: response.uvIndex,
                     windSpeed: response.windSpeed,
-                    windDirection: response.windDirection,
-                    sunrise: response.sunrise,
-                    sunset: response.sunset,
-                    sourceURL: response.sourceURL,
-                    airQualityModelSourceURL: response.airQualityModelSourceURL
+                    windDirection: response.windDirection
                 )
                 guard !Task.isCancelled, self?.requestGeneration == generation else { return }
                 self?.snapshot = snapshot
