@@ -26,9 +26,7 @@ struct ContentView: View {
                     locationName: viewModel.locationName,
                     metrics: viewModel.metrics,
                     isLoading: viewModel.isLoading,
-                    errorMessage: viewModel.errorMessage,
-                    sourceURL: viewModel.snapshot?.sourceURL,
-                    airQualityModelSourceURL: viewModel.snapshot?.airQualityModelSourceURL
+                    errorMessage: viewModel.errorMessage
                 )
                 if viewModel.shouldShowLocationSettings {
                     Button {

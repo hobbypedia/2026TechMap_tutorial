@@ -6,8 +6,6 @@ struct AirQualityStatusPanel: View {
     let metrics: [AirQualityMetricViewModel]
     let isLoading: Bool
     let errorMessage: String?
-    let sourceURL: URL?
-    let airQualityModelSourceURL: URL?
 
     var body: some View {
         VStack(spacing: 9) {
@@ -34,18 +32,6 @@ struct AirQualityStatusPanel: View {
                     .font(.caption)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
-            }
-
-            if let sourceURL, let airQualityModelSourceURL {
-                HStack(spacing: 4) {
-                    Text("Data:")
-                    Link("Open-Meteo", destination: sourceURL)
-                    Text("/")
-                    Link("CAMS", destination: airQualityModelSourceURL)
-                }
-                .font(.caption2)
-                .foregroundStyle(.white.opacity(0.72))
-                .accessibilityLabel("환경 데이터 출처 Open-Meteo와 Copernicus CAMS")
             }
         }
         .padding(.horizontal, 10)

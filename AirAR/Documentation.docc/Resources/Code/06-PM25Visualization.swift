@@ -1,50 +1,39 @@
-func makeDustEmitter(from snapshot: AirQualitySnapshot) -> Entity {
-    let entity = Entity()
-    entity.name = "PM25DustEmitter"
+let texture = try? TextureResource.load(named: "DustParticle")
+var material = UnlitMaterial()
+material.color = .init(
+    tint: UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 1),
+    texture: texture.map { resource in .init(resource) }
+)
+material.blending = .transparent(opacity: 0.33)
 
-    let radians = Float(snapshot.windDirection * .pi / 180)
-    let travelDirection = SIMD2<Float>(-sin(radians), cos(radians))
-    let visualWindSpeed = min(max(Float(snapshot.windSpeed), 0) * 0.035, 0.65)
-
-    var component = ParticleEmitterComponent()
-    component.emitterShape = .box
-    component.birthLocation = .volume
-    component.birthDirection = .local
-    component.emitterShapeSize = [5.8, 1.8, 5.8]
-    component.emissionDirection = [travelDirection.x, 0.04, travelDirection.y]
-    component.speed = max(visualWindSpeed, 0.025)
-    component.speedVariation = max(component.speed * 0.45, 0.015)
-    component.timing = .repeating(warmUp: 2.5, emit: .init(duration: 1))
-
-    var particles = component.mainEmitter
-    particles.birthRate = dustBirthRate(forPM25: snapshot.pm25)
-    particles.birthRateVariation = particles.birthRate * 0.12
-    particles.lifeSpan = 5.5
-    particles.lifeSpanVariation = 1.3
-    particles.size = 0.020
-    particles.sizeVariation = 0.012
-    particles.billboardMode = .billboard
-    particles.opacityCurve = .gradualFadeInOut
-    particles.noiseStrength = 0.11
-    particles.noiseScale = 0.72
-    particles.noiseAnimationSpeed = 0.16
-    particles.blendMode = .alpha
-    particles.color = .evolving(
-        start: .random(
-            a: UIColor(red: 0.52, green: 0.42, blue: 0.24, alpha: 0.18),
-            b: UIColor(red: 0.82, green: 0.69, blue: 0.42, alpha: 0.34)
-        ),
-        end: .single(UIColor(red: 0.63, green: 0.52, blue: 0.31, alpha: 0))
+let count = pm25 >= 76
+    ? min(240 + Int(((pm25 - 76) * 1.2).rounded()), 360) * 4
+    : min(max(Int((max(pm25, 0) * 4).rounded()), 20), 180) * 4
+let sizePattern: [Float] = [0.042, 0.050, 0.058, 0.068, 0.078]
+for index in 0..<count {
+    let size = sizePattern[(index * 7) % sizePattern.count] * 0.5
+    let particle = ModelEntity(
+        mesh: .generatePlane(width: size, height: size),
+        materials: [material]
     )
-    component.mainEmitter = particles
-    entity.components.set(component)
-    return entity
+    particle.name = "DustParticle-" + String(index)
+    particle.position = particlePosition(index: index, pm25: pm25)
+    dustField.addChild(particle)
 }
 
-func dustBirthRate(forPM25 value: Double) -> Float {
-    let clampedValue = max(value, 0)
-    if clampedValue >= 76 {
-        return min(320 + Float(clampedValue - 76) * 0.65, 520)
-    }
-    return 35 + Float(clampedValue) * 3
+func particlePosition(index: Int, pm25: Double) -> SIMD3<Float> {
+    let seed = UInt64(max(0, Int((pm25 * 10).rounded())))
+        + UInt64(index * 1_103)
+    let azimuthSeed = Float((seed * 1_664_525 + 1_013_904_223) % 10_000) / 9_999
+    let radiusSeed = Float((seed * 1_103_515_245 + 12_345) % 10_000) / 9_999
+    let heightSeed = Float((seed * 22_695_477 + 1) % 10_000) / 9_999
+    let severe = pm25 >= 76
+    let azimuth = azimuthSeed * 2 * Float.pi
+    let radius = (severe ? 0.55 : 0.7) + radiusSeed * (severe ? 1.65 : 1.3)
+    let height: Float = severe ? 1.5 : 1.1
+    return [
+        cos(azimuth) * radius,
+        (heightSeed - 0.5) * height,
+        sin(azimuth) * radius
+    ]
 }

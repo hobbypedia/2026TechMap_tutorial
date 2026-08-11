@@ -2,7 +2,7 @@ import Foundation
 
 /// 현재 대기 환경 데이터를 제공하는 서비스의 계약입니다.
 protocol AirQualityServiceProtocol: Sendable {
-    /// 지정한 좌표의 기온, PM2.5, UV Index, 지상 바람과 일출·일몰을 가져옵니다.
+    /// 지정한 좌표의 기온, PM2.5, UV Index와 지상 바람을 가져옵니다.
     /// - Parameters:
     ///   - latitude: 조회할 위도입니다.
     ///   - longitude: 조회할 경도입니다.
@@ -26,13 +26,13 @@ enum AirQualityServiceError: Error, Equatable, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "API 요청 주소를 만들 수 없습니다."
+            return "요청 주소를 만들 수 없습니다."
         case let .httpError(statusCode):
-            return "API 서버가 요청을 처리하지 못했습니다. (HTTP \(statusCode))"
+            return "서버가 요청을 처리하지 못했습니다. (HTTP \(statusCode))"
         case .invalidResponse:
-            return "API 서버 응답을 확인할 수 없습니다."
+            return "서버 응답 형식을 확인할 수 없습니다."
         case .decodingFailed:
-            return "API의 JSON 데이터 형식이 예상과 다릅니다."
+            return "환경 데이터 형식이 예상과 다릅니다."
         case .networkFailed:
             return "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
         case .cancelled:

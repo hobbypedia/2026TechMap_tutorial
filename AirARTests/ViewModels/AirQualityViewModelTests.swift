@@ -81,8 +81,6 @@ final class AirQualityViewModelTests: XCTestCase {
     }
 
     func testCurrentLocationCoordinatesAreUsedAndNameOverridesAPIPlaceholder() async {
-        let sunrise = Date(timeIntervalSince1970: 1_775_000_000)
-        let sunset = sunrise.addingTimeInterval(48_000)
         let response = AirQualitySnapshot(
             locationName: "현재 위치",
             measuredAt: "2026-08-04T12:00",
@@ -90,9 +88,7 @@ final class AirQualityViewModelTests: XCTestCase {
             pm25: 8,
             uvIndex: 3,
             windSpeed: 5.4,
-            windDirection: 225,
-            sunrise: sunrise,
-            sunset: sunset
+            windDirection: 225
         )
         let service = MockAirQualityService(results: [.success(response)])
         let location = UserLocation(latitude: 35.1796, longitude: 129.0756, displayName: "부산광역시 중구")
@@ -110,8 +106,6 @@ final class AirQualityViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.snapshot?.locationName, "부산광역시 중구")
         XCTAssertEqual(viewModel.snapshot?.windSpeed, 5.4)
         XCTAssertEqual(viewModel.snapshot?.windDirection, 225)
-        XCTAssertEqual(viewModel.snapshot?.sunrise, sunrise)
-        XCTAssertEqual(viewModel.snapshot?.sunset, sunset)
     }
 
     func testDeniedLocationPermissionShowsSettingsAction() async {

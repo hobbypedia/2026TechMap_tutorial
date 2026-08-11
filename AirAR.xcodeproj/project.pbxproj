@@ -9,8 +9,9 @@
 /* Begin PBXBuildFile section */
 		A00000000000000000000001 /* App/AirARApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000001 /* App/AirARApp.swift */; };
 		A00000000000000000000002 /* Models/AirQualitySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000002 /* Models/AirQualitySnapshot.swift */; };
+		A00000000000000000000003 /* Models/AirQualityAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000003 /* Models/AirQualityAPIResponse.swift */; };
 		A00000000000000000000004 /* Services/AirQualityServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000004 /* Services/AirQualityServiceProtocol.swift */; };
-		A00000000000000000000005 /* Services/OpenMeteoEnvironmentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* Services/OpenMeteoEnvironmentService.swift */; };
+		A00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift */; };
 		A00000000000000000000006 /* ViewModels/AirQualityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000006 /* ViewModels/AirQualityViewModel.swift */; };
 		A00000000000000000000007 /* AR/ARSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000007 /* AR/ARSessionState.swift */; };
 		A00000000000000000000008 /* AR/AirQualityVisualizationMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000008 /* AR/AirQualityVisualizationMapper.swift */; };
@@ -28,13 +29,10 @@
 		A00000000000000000000014 /* Models/UserLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000015 /* Models/UserLocation.swift */; };
 		A00000000000000000000015 /* Services/LocationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000016 /* Services/LocationServiceProtocol.swift */; };
 		A00000000000000000000016 /* Services/CoreLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000017 /* Services/CoreLocationService.swift */; };
-		A00000000000000000000017 /* Models/OpenMeteoAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000019 /* Models/OpenMeteoAPIResponse.swift */; };
-		A00000000000000000000020 /* OpenMeteoEnvironmentServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000020 /* OpenMeteoEnvironmentServiceTests.swift */; };
+		A00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */; };
 		A00000000000000000000021 /* AirQualityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000021 /* AirQualityViewModelTests.swift */; };
 		A00000000000000000000022 /* AirQualityVisualizationMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */; };
 		A00000000000000000000023 /* AirQualityLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000023 /* AirQualityLevelTests.swift */; };
-		A00000000000000000000025 /* AR/UVBeamShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000025 /* AR/UVBeamShader.metal */; };
-		A00000000000000000000026 /* AR/SolarLensFlareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000026 /* AR/SolarLensFlareView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,8 +48,9 @@
 /* Begin PBXFileReference section */
 		F00000000000000000000001 /* AirARApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirARApp.swift; sourceTree = "<group>"; };
 		F00000000000000000000002 /* AirQualitySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualitySnapshot.swift; sourceTree = "<group>"; };
+		F00000000000000000000003 /* AirQualityAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityAPIResponse.swift; sourceTree = "<group>"; };
 		F00000000000000000000004 /* AirQualityServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityServiceProtocol.swift; sourceTree = "<group>"; };
-		F00000000000000000000005 /* OpenMeteoEnvironmentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoEnvironmentService.swift; sourceTree = "<group>"; };
+		F00000000000000000000005 /* OpenMeteoAirQualityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoAirQualityService.swift; sourceTree = "<group>"; };
 		F00000000000000000000006 /* AirQualityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityViewModel.swift; sourceTree = "<group>"; };
 		F00000000000000000000007 /* ARSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARSessionState.swift; sourceTree = "<group>"; };
 		F00000000000000000000008 /* AirQualityVisualizationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityVisualizationMapper.swift; sourceTree = "<group>"; };
@@ -70,13 +69,10 @@
 		F00000000000000000000015 /* UserLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserLocation.swift; sourceTree = "<group>"; };
 		F00000000000000000000016 /* LocationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationServiceProtocol.swift; sourceTree = "<group>"; };
 		F00000000000000000000017 /* CoreLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLocationService.swift; sourceTree = "<group>"; };
-		F00000000000000000000019 /* OpenMeteoAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoAPIResponse.swift; sourceTree = "<group>"; };
-		F00000000000000000000020 /* OpenMeteoEnvironmentServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoEnvironmentServiceTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenMeteoAirQualityServiceTests.swift; sourceTree = "<group>"; };
 		F00000000000000000000021 /* AirQualityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityViewModelTests.swift; sourceTree = "<group>"; };
 		F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityVisualizationMapperTests.swift; sourceTree = "<group>"; };
 		F00000000000000000000023 /* AirQualityLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityLevelTests.swift; sourceTree = "<group>"; };
-		F00000000000000000000025 /* UVBeamShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = UVBeamShader.metal; sourceTree = "<group>"; };
-		F00000000000000000000026 /* SolarLensFlareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarLensFlareView.swift; sourceTree = "<group>"; };
 		F00000000000000000000100 /* AirAR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AirAR.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F00000000000000000000101 /* AirARTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirARTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -148,7 +144,7 @@
 			children = (
 				F00000000000000000000002 /* AirQualitySnapshot.swift */,
 				F00000000000000000000013 /* AirQualityLevel.swift */,
-				F00000000000000000000019 /* OpenMeteoAPIResponse.swift */,
+				F00000000000000000000003 /* AirQualityAPIResponse.swift */,
 				F00000000000000000000015 /* UserLocation.swift */,
 			);
 			path = Models;
@@ -158,7 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				F00000000000000000000004 /* AirQualityServiceProtocol.swift */,
-				F00000000000000000000005 /* OpenMeteoEnvironmentService.swift */,
+				F00000000000000000000005 /* OpenMeteoAirQualityService.swift */,
 				F00000000000000000000016 /* LocationServiceProtocol.swift */,
 				F00000000000000000000017 /* CoreLocationService.swift */,
 			);
@@ -182,8 +178,6 @@
 				F00000000000000000000009 /* simd_float4x4+Translation.swift */,
 				F0000000000000000000000A /* AirQualityEntityFactory.swift */,
 				F0000000000000000000000B /* AirQualityARView.swift */,
-				F00000000000000000000026 /* SolarLensFlareView.swift */,
-				F00000000000000000000025 /* UVBeamShader.metal */,
 			);
 			path = AR;
 			sourceTree = "<group>";
@@ -218,7 +212,7 @@
 		600000000000000000000021 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				F00000000000000000000020 /* OpenMeteoEnvironmentServiceTests.swift */,
+				F00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -351,12 +345,12 @@
 				A00000000000000000000001 /* App/AirARApp.swift in Sources */,
 				A00000000000000000000002 /* Models/AirQualitySnapshot.swift in Sources */,
 				A00000000000000000000012 /* Models/AirQualityLevel.swift in Sources */,
+				A00000000000000000000003 /* Models/AirQualityAPIResponse.swift in Sources */,
 				A00000000000000000000014 /* Models/UserLocation.swift in Sources */,
 				A00000000000000000000004 /* Services/AirQualityServiceProtocol.swift in Sources */,
-				A00000000000000000000005 /* Services/OpenMeteoEnvironmentService.swift in Sources */,
+				A00000000000000000000005 /* Services/OpenMeteoAirQualityService.swift in Sources */,
 				A00000000000000000000015 /* Services/LocationServiceProtocol.swift in Sources */,
 				A00000000000000000000016 /* Services/CoreLocationService.swift in Sources */,
-				A00000000000000000000017 /* Models/OpenMeteoAPIResponse.swift in Sources */,
 				A00000000000000000000006 /* ViewModels/AirQualityViewModel.swift in Sources */,
 				A00000000000000000000013 /* ViewModels/AirQualityMetricViewModel.swift in Sources */,
 				A00000000000000000000007 /* AR/ARSessionState.swift in Sources */,
@@ -364,8 +358,6 @@
 				A00000000000000000000009 /* AR/simd_float4x4+Translation.swift in Sources */,
 				A0000000000000000000000A /* AR/AirQualityEntityFactory.swift in Sources */,
 				A0000000000000000000000B /* AR/AirQualityARView.swift in Sources */,
-				A00000000000000000000026 /* AR/SolarLensFlareView.swift in Sources */,
-				A00000000000000000000025 /* AR/UVBeamShader.metal in Sources */,
 				A0000000000000000000000C /* Views/MetricView.swift in Sources */,
 				A0000000000000000000000D /* Views/AirQualityStatusPanel.swift in Sources */,
 				A0000000000000000000000E /* Views/ARControlPanel.swift in Sources */,
@@ -378,7 +370,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00000000000000000000020 /* OpenMeteoEnvironmentServiceTests.swift in Sources */,
+				A00000000000000000000020 /* OpenMeteoAirQualityServiceTests.swift in Sources */,
 				A00000000000000000000021 /* AirQualityViewModelTests.swift in Sources */,
 				A00000000000000000000022 /* AirQualityVisualizationMapperTests.swift in Sources */,
 				A00000000000000000000023 /* AirQualityLevelTests.swift in Sources */,
@@ -407,7 +399,7 @@
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -426,7 +418,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -483,7 +475,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirARTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -498,7 +490,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.AirARTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
