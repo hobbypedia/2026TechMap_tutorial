@@ -1,6 +1,6 @@
 @Tutorials(name: "현재 위치의 환경 데이터를 AR로 시각화하기") {
     @Intro(title: "수치를 공간의 분위기로 바꾸기") {
-        Open-Meteo의 기온, PM2.5, UV Index와 바람을 받아 미세먼지가 실제 풍향으로 날리는 iOS AR 앱을 완성합니다.
+        Open-Meteo REST API에서 기온·PM2.5·UV·바람을 받아 미세먼지가 실제 풍향으로 날리고, 이미지 없이 Metal로 UV 빔을 그리는 iOS AR 앱을 완성합니다. API와 REST의 뜻부터 URL 요청, JSON 디코딩과 RealityKit 사용자 정의 재질까지 차례로 배웁니다.
 
         @Image(source: "air-ar-hero.svg", alt: "AR 카메라 안에 미세먼지와 자외선 오브젝트가 떠 있는 앱 개념도")
     }
