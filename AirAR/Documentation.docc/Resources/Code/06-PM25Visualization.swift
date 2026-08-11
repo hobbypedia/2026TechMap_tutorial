@@ -1,39 +1,34 @@
-let texture = try? TextureResource.load(named: "DustParticle")
-var material = UnlitMaterial()
-material.color = .init(
-    tint: UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 1),
-    texture: texture.map { resource in .init(resource) }
+let emitterEntity = Entity()
+emitterEntity.name = "PM25ParticleEmitter"
+
+let radius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: snapshot.pm25)
+let speed = AirQualityVisualizationMapper.visualWindSpeed(
+    forMetersPerSecond: snapshot.windSpeed
 )
-material.blending = .transparent(opacity: 0.33)
+var component = ParticleEmitterComponent()
+component.emitterShape = .sphere
+component.emitterShapeSize = [radius * 2, 1.6, radius * 2]
+component.birthLocation = .volume
+component.birthDirection = .world
+component.emissionDirection = AirQualityVisualizationMapper.emitterDirection(
+    forMeteorologicalDegrees: snapshot.windDirection
+)
+component.speed = speed
+component.speedVariation = max(speed * 0.35, 0.02)
+component.timing = .repeating(emit: .init(duration: 1), idle: nil)
 
-let count = pm25 >= 76
-    ? min(240 + Int(((pm25 - 76) * 1.2).rounded()), 360) * 4
-    : min(max(Int((max(pm25, 0) * 4).rounded()), 20), 180) * 4
-let sizePattern: [Float] = [0.042, 0.050, 0.058, 0.068, 0.078]
-for index in 0..<count {
-    let size = sizePattern[(index * 7) % sizePattern.count] * 0.5
-    let particle = ModelEntity(
-        mesh: .generatePlane(width: size, height: size),
-        materials: [material]
-    )
-    particle.name = "DustParticle-" + String(index)
-    particle.position = particlePosition(index: index, pm25: pm25)
-    dustField.addChild(particle)
-}
+component.mainEmitter.birthRate = AirQualityVisualizationMapper.particleBirthRate(
+    forPM25: snapshot.pm25
+)
+component.mainEmitter.lifeSpan = AirQualityVisualizationMapper.particleLifeSpan
+component.mainEmitter.size = 0.05
+component.mainEmitter.sizeVariation = 0.012
+component.mainEmitter.billboardMode = .billboard
+component.mainEmitter.opacityCurve = .gradualFadeInOut
+component.mainEmitter.color = .constant(
+    .single(UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 0.42))
+)
 
-func particlePosition(index: Int, pm25: Double) -> SIMD3<Float> {
-    let seed = UInt64(max(0, Int((pm25 * 10).rounded())))
-        + UInt64(index * 1_103)
-    let azimuthSeed = Float((seed * 1_664_525 + 1_013_904_223) % 10_000) / 9_999
-    let radiusSeed = Float((seed * 1_103_515_245 + 12_345) % 10_000) / 9_999
-    let heightSeed = Float((seed * 22_695_477 + 1) % 10_000) / 9_999
-    let severe = pm25 >= 76
-    let azimuth = azimuthSeed * 2 * Float.pi
-    let radius = (severe ? 0.55 : 0.7) + radiusSeed * (severe ? 1.65 : 1.3)
-    let height: Float = severe ? 1.5 : 1.1
-    return [
-        cos(azimuth) * radius,
-        (heightSeed - 0.5) * height,
-        sin(azimuth) * radius
-    ]
-}
+// image를 지정하지 않으므로 RealityKit의 기본 파티클 모양을 사용합니다.
+emitterEntity.components.set(component)
+dustField.addChild(emitterEntity)

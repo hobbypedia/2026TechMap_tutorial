@@ -23,39 +23,47 @@ final class AirQualityEntityFactory {
     }
 
     private func makeDustField(snapshot: AirQualitySnapshot) -> Entity {
-        let group = Entity()
-        group.name = "PM25DustField"
-        group.position = [0, 0, 0]
+        let emitterEntity = Entity()
+        emitterEntity.name = "PM25ParticleEmitter"
 
-        let texture = try? TextureResource.load(named: "DustParticle")
-        let material = makeUnlitMaterial(
-            texture: texture,
-            tint: UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 1),
-            opacity: 0.40
+        let radius = AirQualityVisualizationMapper.dustFieldRadius(forPM25: snapshot.pm25)
+        let speed = AirQualityVisualizationMapper.visualWindSpeed(
+            forMetersPerSecond: snapshot.windSpeed
         )
-        let count = AirQualityVisualizationMapper.particleCount(forPM25: snapshot.pm25)
-        let sizePattern: [Float] = [0.042, 0.050, 0.058, 0.068, 0.078]
+        var component = ParticleEmitterComponent()
+        component.emitterShape = .sphere
+        component.emitterShapeSize = [radius * 2, 1.6, radius * 2]
+        component.birthLocation = .volume
+        component.birthDirection = .world
+        component.emissionDirection = AirQualityVisualizationMapper.emitterDirection(
+            forMeteorologicalDegrees: snapshot.windDirection
+        )
+        component.speed = speed
+        component.speedVariation = max(speed * 0.35, 0.02)
+        component.timing = .repeating(
+            emit: .init(duration: 1),
+            idle: nil
+        )
 
-        for index in 0..<count {
-            let baseSize = sizePattern[(index * 7) % sizePattern.count]
-            let position = AirQualityVisualizationMapper.particlePosition(
-                index: index,
-                pm25: snapshot.pm25
-            )
-            let size = baseSize
-                * AirQualityVisualizationMapper.particleLinearScale
-                * AirQualityVisualizationMapper.perspectiveScale(for: position)
-            let particle = ModelEntity(
-                mesh: .generatePlane(width: size, height: size),
-                materials: [material]
-            )
-            particle.name = "DustParticle-\(index)"
-            particle.position = position
-            particle.orientation = simd_quatf(angle: Float(index % 9) * 0.17, axis: [0, 0, 1])
-            group.addChild(particle)
-        }
-
-        return group
+        component.mainEmitter.birthRate = AirQualityVisualizationMapper.particleBirthRate(
+            forPM25: snapshot.pm25
+        )
+        component.mainEmitter.birthRateVariation = component.mainEmitter.birthRate * 0.12
+        component.mainEmitter.lifeSpan = AirQualityVisualizationMapper.particleLifeSpan
+        component.mainEmitter.lifeSpanVariation = 1.2
+        component.mainEmitter.size = 0.05
+        component.mainEmitter.sizeVariation = 0.012
+        component.mainEmitter.billboardMode = .billboard
+        component.mainEmitter.opacityCurve = .gradualFadeInOut
+        component.mainEmitter.noiseStrength = 0.08
+        component.mainEmitter.noiseScale = 0.65
+        component.mainEmitter.noiseAnimationSpeed = 0.18
+        component.mainEmitter.color = .constant(
+            .single(UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 0.42))
+        )
+        // image를 지정하지 않아 RealityKit의 기본 원형 파티클 텍스처를 사용합니다.
+        emitterEntity.components.set(component)
+        return emitterEntity
     }
 
     private func makeUVObject(snapshot: AirQualitySnapshot) -> Entity {

@@ -1,6 +1,6 @@
 # AirAR
 
-기기의 현재 위치에서 기온, PM2.5, UV Index와 지상 풍속·풍향을 Open-Meteo로 조회하고, 최초 사용자 위치를 중심으로 북쪽 정렬 월드 공간에 RealityKit 시각화를 배치하는 iOS 17 교육용 앱입니다.
+기기의 현재 위치에서 기온, PM2.5, UV Index와 지상 풍속·풍향을 Open-Meteo로 조회하고, 최초 사용자 위치를 중심으로 북쪽 정렬 월드 공간에 RealityKit 시각화를 배치하는 iOS 18 교육용 앱입니다.
 
 > 이 앱의 AR 기능은 카메라와 6DoF 월드 트래킹이 필요한 기능입니다. 시뮬레이터가 아닌 ARKit 지원 iPhone 또는 iPad에서 최종 확인해야 합니다.
 
@@ -11,8 +11,8 @@
 ## 기술 스택
 
 - Swift 5, SwiftUI, async/await, URLSession
-- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`, 투명 스프라이트와 프레임 애니메이션
-- iOS 17.0 이상, Xcode 15 이상
+- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`와 `ParticleEmitterComponent`
+- iOS 18.0 이상, Xcode 16 이상
 - XCTest, DocC, GitHub Actions와 GitHub Pages
 
 ## 아키텍처
@@ -27,7 +27,7 @@ Open-Meteo Weather + Air Quality API
 → 중력·북쪽 정렬 월드 앵커
 ```
 
-API 응답 DTO와 앱의 `AirQualitySnapshot`을 분리했습니다. `AirQualityViewModel`은 로딩 상태뿐 아니라 화면에 표시할 포맷과 5단계 환경 상태까지 제공하며, View는 표시만 담당합니다. AR 시각화 개수와 정규화는 `AirQualityVisualizationMapper`에 순수 함수로 분리해 기기나 RealityKit 없이 테스트할 수 있습니다.
+API 응답 DTO와 앱의 `AirQualitySnapshot`을 분리했습니다. `AirQualityViewModel`은 로딩 상태뿐 아니라 화면에 표시할 포맷과 5단계 환경 상태까지 제공하며, View는 표시만 담당합니다. AR 시각화 생성률과 정규화는 `AirQualityVisualizationMapper`에 순수 함수로 분리해 기기나 RealityKit 없이 테스트할 수 있습니다.
 
 상단 상태는 `매우 좋음 → 좋음 → 보통 → 나쁨 → 매우 나쁨` 순서로 표시합니다. PM2.5는 에어코리아 경계값 15/35/75㎍/㎥를 유지하면서 공식 `좋음` 구간을 8㎍/㎥에서 둘로 나누고, UV는 기상청 5단계 경계값 2/5/7/10을 사용합니다.
 
@@ -57,7 +57,7 @@ Scripts/generate_assets.py
 
 1. `AirAR.xcodeproj`를 Xcode에서 엽니다.
 2. AirAR Target의 Signing Team을 선택합니다.
-3. iOS 17 이상을 실행하는 ARKit 지원 실제 기기를 연결합니다.
+3. iOS 18 이상을 실행하는 ARKit 지원 실제 기기를 연결합니다.
 4. 앱을 실행하고 `앱을 사용하는 동안` 위치 권한과 카메라 권한을 허용합니다.
 5. 주변을 천천히 비추면 정상 추적 상태에서 시각화가 자동으로 배치됩니다.
 
@@ -106,7 +106,7 @@ xcodebuild -project AirAR.xcodeproj \
 python3 Scripts/generate_assets.py
 ```
 
-표준 라이브러리만 사용하는 스크립트가 텍스트 없는 1024px 앱 아이콘과 DocC용 SVG 개념도를 생성합니다. `DustParticle`과 `UVSpectrum`은 이 프로젝트를 위해 생성한 투명 PNG 디자인이며 앱과 DocC에서 함께 사용합니다.
+표준 라이브러리만 사용하는 스크립트가 텍스트 없는 1024px 앱 아이콘과 DocC용 SVG 개념도를 생성합니다. PM2.5는 별도 이미지 없이 RealityKit의 기본 파티클 모양을 사용하며, `UVSpectrum` 투명 PNG는 앱과 DocC에서 함께 사용합니다.
 
 ## DocC 빌드
 
