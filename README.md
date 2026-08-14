@@ -6,12 +6,12 @@
 
 ## 완성 화면과 사용자 흐름
 
-앱을 열면 상단에 `온도 | 미세먼지 | UV`가 한 줄로 표시됩니다. 데이터와 공간 추적이 준비되면 황토색 먼지는 최초 사용자 위치의 360° 주변에 분포하고 현재 풍향의 반대쪽으로 흘러가며, UV 스펙트럼은 그 위치 위쪽의 한 월드 지점에서 아래로 퍼집니다. 기기를 회전해도 화면에 붙은 HUD처럼 따라오는 대신 실제 공간에 고정된 시각화를 다른 방향에서 계속 볼 수 있습니다. PM2.5가 심각 수준이면 입자 수와 분포 면적이 크게 늘어나고, 풍속이 강할수록 먼지가 빠르게 이동하며, UV Index가 높을수록 광선 불투명도가 올라갑니다.
+앱을 열면 상단에 `온도 | 미세먼지 | UV`가 한 줄로 표시됩니다. 데이터와 공간 추적이 준비되면 황토색 먼지는 최초 사용자 위치의 360° 주변에 분포하고 현재 풍향의 반대쪽으로 흐릅니다. 낮에는 머리 위 월드 지점에 셰이더 기반 태양과 햇빛이 나타나며, 정면으로 올려다보면 코로나·방사광·렌즈 고스트가 강해집니다. 밤에는 Open-Meteo의 현지 일출·일몰 시각에 따라 태양 시각화 전체가 숨겨집니다.
 
 ## 기술 스택
 
 - Swift 5, SwiftUI, async/await, URLSession
-- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`와 `ParticleEmitterComponent`
+- ARKit `ARWorldTrackingConfiguration`, RealityKit `ARView`, `ParticleEmitterComponent`와 Metal surface shader
 - iOS 18.0 이상, Xcode 16 이상
 - XCTest, DocC, GitHub Actions와 GitHub Pages
 
@@ -78,6 +78,8 @@ https://api.open-meteo.com/v1/forecast
 latitude={현재 위도}
 longitude={현재 경도}
 current=temperature_2m,wind_speed_10m,wind_direction_10m
+daily=sunrise,sunset
+forecast_days=1
 wind_speed_unit=ms
 timezone=auto
 ```
@@ -106,9 +108,11 @@ xcodebuild -project AirAR.xcodeproj \
 python3 Scripts/generate_assets.py
 ```
 
-표준 라이브러리만 사용하는 스크립트가 텍스트 없는 1024px 앱 아이콘과 DocC용 SVG 개념도를 생성합니다. PM2.5는 별도 이미지 없이 RealityKit의 기본 파티클 모양을 사용하며, `UVSpectrum` 투명 PNG는 앱과 DocC에서 함께 사용합니다.
+표준 라이브러리만 사용하는 스크립트가 텍스트 없는 1024px 앱 아이콘과 DocC용 SVG 개념도를 생성합니다. PM2.5는 RealityKit의 기본 파티클을 사용하고, UV 빔과 태양은 이미지 에셋 없이 Metal 셰이더와 Core Animation 레이어로 생성합니다.
 
 ## DocC 빌드
+
+DocC 학습 과정은 하나의 긴 문서가 아니라 10개의 독립 튜토리얼로 구성됩니다. 프로젝트 생성부터 SwiftUI 기초, 위치, REST API, ViewModel, ARKit, 파티클, UV 태양, 화면 통합, 테스트 순서로 진행하며 각 단계의 완료 체크포인트를 통과한 뒤 다음 단계로 이동합니다.
 
 ```bash
 xcodebuild docbuild \

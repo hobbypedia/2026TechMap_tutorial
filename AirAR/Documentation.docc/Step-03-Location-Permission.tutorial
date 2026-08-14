@@ -1,0 +1,56 @@
+@Tutorial(time: 35) {
+    @Intro(title: "3단계: 권한을 받고 현재 위치 찾기") {
+        사용 이유를 Info.plist에 설명하고 Core Location으로 한 번의 현재 위치를 안전하게 가져옵니다.
+
+        @Image(source: "world-coordinate-diagram.svg", alt: "현재 좌표가 환경 데이터 요청으로 전달되는 흐름")
+    }
+
+    @Section(title: "개인정보 권한 준비") {
+        @ContentAndMedia {
+            iOS는 민감한 정보에 접근하기 전에 사용자 동의를 요구합니다. Info.plist의 Usage Description은 권한 창에 표시되는 설명이며 비어 있으면 앱이 종료될 수 있습니다.
+        }
+        @Steps {
+            @Step {
+                Info.plist에 NSLocationWhenInUseUsageDescription을 추가하고 현재 지역의 환경 데이터를 조회한다는 이유를 적습니다.
+            }
+            @Step {
+                NSCameraUsageDescription을 추가하고 환경 데이터를 AR 공간에 표시한다는 이유를 적습니다.
+
+                @Code(name: "권한 설정", file: "01-Permissions.plist")
+            }
+        }
+    }
+
+    @Section(title: "Core Location 서비스 만들기") {
+        @ContentAndMedia {
+            CLLocationManager는 권한 상태와 위치 결과를 delegate로 전달합니다. 앱의 나머지 코드는 delegate를 몰라도 되도록 async 함수 하나로 감쌉니다.
+        }
+        @Steps {
+            @Step {
+                Services 폴더에 LocationServiceProtocol과 CoreLocationService를 만듭니다.
+            }
+            @Step {
+                권한이 결정되지 않았으면 앱 사용 중 권한을 요청하고, 허용되면 requestLocation으로 한 번만 좌표를 요청합니다.
+
+                @Code(name: "LocationService.swift", file: "01-LocationService.swift")
+            }
+            @Step {
+                거부, 위치 서비스 꺼짐, 좌표 없음과 취소를 서로 다른 오류로 전달합니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인과 문제 해결") {
+        @ContentAndMedia {
+            완료 체크포인트: 최초 실행에서 위치와 카메라 권한 설명이 나타나고, 허용했을 때 위도·경도를 얻습니다.
+        }
+        @Steps {
+            @Step {
+                권한 창이 다시 뜨지 않으면 앱을 삭제해 재설치하거나 설정 앱에서 권한을 변경합니다.
+            }
+            @Step {
+                시뮬레이터에서는 Features > Location으로 테스트 위치를 선택합니다. 실제 AR 확인은 실기기에서 합니다. 이제 4단계 REST API로 이동합니다.
+            }
+        }
+    }
+}

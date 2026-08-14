@@ -1,0 +1,74 @@
+@Tutorial(time: 45) {
+    @Intro(title: "10단계: 테스트하고 앱 완성하기") {
+        실제 네트워크 없이 데이터 계층을 검증하고, 빌드·DocC·실기기 체크리스트를 모두 통과시킵니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "테스트를 마친 완성 AirAR 앱")
+    }
+
+    @Section(title: "단위 테스트 작성하기") {
+        @ContentAndMedia {
+            단위 테스트는 작은 규칙을 자동으로 확인합니다. URLProtocolStub은 실제 서버 대신 준비한 HTTP 응답을 URLSession에 돌려주므로 빠르고 반복 가능한 API 테스트가 됩니다.
+        }
+        @Steps {
+            @Step {
+                성공 JSON으로 기온, PM2.5, UV, 바람, 일출과 일몰이 정확히 매핑되는지 확인합니다.
+            }
+            @Step {
+                빠진 필드, 잘못된 JSON과 HTTP 503이 각각 올바른 오류가 되는지 확인합니다.
+
+                @Code(name: "URLProtocolStub.swift", file: "10-URLProtocolStub.swift")
+            }
+            @Step {
+                PM2.5 생성률, 풍향 벡터, UV 정규화, 태양 정면 각도와 일출·일몰 경계를 순수 함수 테스트로 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "세 가지 빌드 통과하기") {
+        @ContentAndMedia {
+            앱 빌드는 소스와 Metal을, 테스트는 동작 규칙을, DocC 빌드는 튜토리얼 문법과 리소스 링크를 검증합니다.
+        }
+        @Steps {
+            @Step {
+                Product > Build로 앱이 컴파일되는지 확인합니다.
+            }
+            @Step {
+                Product > Test로 전체 XCTest가 실패 없이 끝나는지 확인합니다.
+            }
+            @Step {
+                Product > Build Documentation으로 10개 튜토리얼이 목차 순서대로 열리고 코드와 이미지가 표시되는지 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "실제 기기 최종 체크리스트") {
+        @ContentAndMedia {
+            시뮬레이터 테스트가 성공해도 카메라, 센서, 월드 고정과 실제 GPU 효과는 실기기에서 확인해야 합니다.
+        }
+        @Steps {
+            @Step {
+                위치와 카메라 권한을 허용하고 현재 지역 이름과 세 환경 수치가 나타나는지 확인합니다.
+            }
+            @Step {
+                기기를 360도 돌려도 먼지와 태양이 최초 월드 위치에 남는지 확인합니다.
+            }
+            @Step {
+                먼지가 풍향으로 이동하고, 낮에 태양을 올려다보면 코로나와 렌즈 고스트가 나타나며, 밤에는 태양이 숨겨지는지 확인합니다.
+            }
+            @Step {
+                네트워크 끄기, 위치 권한 거부, 동작 줄이기와 새로고침을 각각 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "과정 완료") {
+        @ContentAndMedia {
+            축하합니다. 프로젝트 생성부터 SwiftUI 상태, REST API, 위치, ARKit, RealityKit 파티클, Metal 태양과 테스트까지 직접 연결한 AirAR 앱을 완성했습니다.
+        }
+        @Steps {
+            @Step {
+                마지막으로 변경 사항을 저장하고 실기기 체크리스트 결과를 기록합니다.
+            }
+        }
+    }
+}

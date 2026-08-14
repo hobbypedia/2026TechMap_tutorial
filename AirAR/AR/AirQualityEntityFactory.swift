@@ -1,8 +1,25 @@
+import Metal
 import RealityKit
 import UIKit
 
 /// 수치표 대신 공기 중 먼지와 자외선 에너지 오브젝트를 생성합니다.
 final class AirQualityEntityFactory {
+    private lazy var uvSurfaceShader: CustomMaterial.SurfaceShader? = {
+        guard let device = MTLCreateSystemDefaultDevice(),
+              let library = device.makeDefaultLibrary() else {
+            return nil
+        }
+        return CustomMaterial.SurfaceShader(named: "uvBeamSurface", in: library)
+    }()
+
+    private lazy var sunCoronaSurfaceShader: CustomMaterial.SurfaceShader? = {
+        guard let device = MTLCreateSystemDefaultDevice(),
+              let library = device.makeDefaultLibrary() else {
+            return nil
+        }
+        return CustomMaterial.SurfaceShader(named: "sunCoronaSurface", in: library)
+    }()
+
     /// 환경 데이터 전체 시각화를 만듭니다.
     func makeVisualization(from snapshot: AirQualitySnapshot) -> Entity {
         let root = Entity()
@@ -68,51 +85,90 @@ final class AirQualityEntityFactory {
 
     private func makeUVObject(snapshot: AirQualitySnapshot) -> Entity {
         let group = Entity()
-        group.name = "UVGroup"
+        group.name = "SunlightGroup"
         group.position = [0, 0, 0]
+        group.isEnabled = snapshot.isSunVisible()
 
         let normalized = AirQualityVisualizationMapper.normalizedUV(for: snapshot.uvIndex)
-        let texture = try? TextureResource.load(named: "UVSpectrum")
-        let opacity = AirQualityVisualizationMapper.uvOpacity(for: snapshot.uvIndex) * 0.35
-        let material = makeUnlitMaterial(texture: texture, tint: .white, opacity: opacity)
-        let size = 1.65 + normalized * 0.35
-        let beamCount = 8
-        let sourceHeight: Float = 1.45
-        let radialOffset: Float = 0.6
+        let opacity = AirQualityVisualizationMapper.uvOpacity(for: snapshot.uvIndex) * 0.26
+        let material = makeUVMaterial(normalizedUV: normalized, opacity: opacity)
+        let size = 2.45 + normalized * 0.45
+        let beamCount = 2
+        let sourceHeight: Float = 2.4
+        let radialOffset: Float = 0.48
         let halfHeight = size * 0.5
         let tilt = asin(min(radialOffset / halfHeight, 0.95))
         let centerHeight = sourceHeight - cos(tilt) * halfHeight
 
         for index in 0..<beamCount {
-            let yaw = Float(index) * 2 * .pi / Float(beamCount)
+            // 양면 평면 두 장을 직각으로 교차해 모든 방향에서 보이면서 흰색 중첩은 줄입니다.
+            let yaw = Float(index) * .pi / Float(beamCount)
             let yawRotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
             let tiltRotation = simd_quatf(angle: tilt, axis: [1, 0, 0])
-            let spectrum = ModelEntity(
+            let beam = ModelEntity(
                 mesh: .generatePlane(width: size, height: size),
                 materials: [material]
             )
-            spectrum.name = "UVSpectrum-" + String(index)
-            spectrum.position = yawRotation.act([0, centerHeight, -radialOffset])
-            spectrum.orientation = yawRotation * tiltRotation
-            group.addChild(spectrum)
+            beam.name = "SunBeam-" + String(index)
+            beam.position = yawRotation.act([0, centerHeight, -radialOffset])
+            beam.orientation = yawRotation * tiltRotation
+            group.addChild(beam)
         }
+
+        if let coronaMaterial = makeSunCoronaMaterial(normalizedUV: normalized) {
+            let coronaSize = 0.82 + normalized * 0.24
+            let corona = ModelEntity(
+                mesh: .generatePlane(width: coronaSize, height: coronaSize),
+                materials: [coronaMaterial]
+            )
+            corona.name = "SunCorona"
+            corona.position = [0, sourceHeight, 0]
+            group.addChild(corona)
+        }
+
+        // 실제 원형 메시를 드러내지 않고 화면 투영과 렌즈 플레어 기준점으로만 사용합니다.
+        let source = Entity()
+        source.name = "SunSource"
+        source.position = [0, sourceHeight, 0]
+        group.addChild(source)
 
         return group
     }
 
-    private func makeUnlitMaterial(
-        texture: TextureResource?,
-        tint: UIColor,
-        opacity: Float
-    ) -> UnlitMaterial {
-        var material = UnlitMaterial()
-        if let texture {
-            material.color = .init(tint: tint, texture: .init(texture))
-        } else {
-            material.color = .init(tint: tint)
+    /// Metal surface shader가 UV 좌표만으로 따뜻한 햇빛과 부드러운 가장자리를 만듭니다.
+    private func makeUVMaterial(normalizedUV: Float, opacity: Float) -> any Material {
+        guard let uvSurfaceShader,
+              var material = try? CustomMaterial(
+                surfaceShader: uvSurfaceShader,
+                lightingModel: .unlit
+              ) else {
+            var fallback = UnlitMaterial()
+            fallback.color = .init(
+                tint: UIColor(red: 1, green: 0.88, blue: 0.58, alpha: 1)
+            )
+            fallback.blending = .transparent(opacity: .init(floatLiteral: opacity))
+            return fallback
         }
-        material.blending = .transparent(opacity: .init(floatLiteral: opacity))
+
+        material.custom.value = [normalizedUV, opacity, 0, 0]
+        material.blending = .transparent(opacity: .init(floatLiteral: 1))
+        material.faceCulling = .none
         return material
     }
 
+    /// 태양 원반, 금빛 헤일로와 뾰족한 코로나 광선을 하나의 빌보드 평면에 그립니다.
+    private func makeSunCoronaMaterial(normalizedUV: Float) -> (any Material)? {
+        guard let sunCoronaSurfaceShader,
+              var material = try? CustomMaterial(
+                surfaceShader: sunCoronaSurfaceShader,
+                lightingModel: .unlit
+              ) else {
+            return nil
+        }
+
+        material.custom.value = [normalizedUV, 0.88 + normalizedUV * 0.12, 0, 0]
+        material.blending = .transparent(opacity: .init(floatLiteral: 1))
+        material.faceCulling = .none
+        return material
+    }
 }

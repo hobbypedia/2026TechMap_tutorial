@@ -20,16 +20,33 @@ struct AirQualityAPIResponse: Decodable, Sendable {
 /// Open-Meteo Forecast API의 현재 기온과 지상 10m 바람 응답 DTO입니다.
 struct WeatherForecastAPIResponse: Decodable, Sendable {
     struct Current: Decodable, Sendable {
+        let time: String
         let temperature: Double
         let windSpeed: Double
         let windDirection: Double
 
         enum CodingKeys: String, CodingKey {
+            case time
             case temperature = "temperature_2m"
             case windSpeed = "wind_speed_10m"
             case windDirection = "wind_direction_10m"
         }
     }
 
+    struct Daily: Decodable, Sendable {
+        let sunrise: [String]
+        let sunset: [String]
+    }
+
     let current: Current
+    let daily: Daily
+    let timezone: String
+    let utcOffsetSeconds: Int
+
+    enum CodingKeys: String, CodingKey {
+        case current
+        case daily
+        case timezone
+        case utcOffsetSeconds = "utc_offset_seconds"
+    }
 }

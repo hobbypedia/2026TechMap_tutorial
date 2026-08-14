@@ -4,25 +4,27 @@ sceneUpdateSubscription = arView.scene.subscribe(
     self?.animate(deltaTime: Float(event.deltaTime))
 }
 
-private func collectAnimatedEntities(in root: Entity) {
-    particleEmitters.removeAll(keepingCapacity: true)
-    uvSpectrums.removeAll(keepingCapacity: true)
-
-    func visit(_ entity: Entity) {
-        if entity.components.has(ParticleEmitterComponent.self) {
-            particleEmitters.append(entity)
-        } else if entity.name.hasPrefix("UVSpectrum-") {
-            uvSpectrums.append(entity)
-        }
-        entity.children.forEach(visit)
-    }
-    visit(root)
-}
-
 private func animate(deltaTime: Float) {
-    elapsedTime += min(deltaTime, 0.1)
-    let pulse = 1 + sin(elapsedTime * 1.35) * 0.035
-    uvSpectrums.forEach { spectrum in
-        spectrum.scale = [pulse, pulse, pulse]
+    let isDaytime = snapshot.isSunVisible(at: Date())
+    sunlightGroup.isEnabled = isDaytime
+
+    particleEmitters.forEach { entity in
+        guard var emitter = entity.components[ParticleEmitterComponent.self] else { return }
+        emitter.simulationState = animationsEnabled ? .play : .pause
+        entity.components.set(emitter)
     }
+
+    guard isDaytime else {
+        lensFlareView.hide()
+        return
+    }
+
+    // 코로나는 카메라를 향하고, 월드 태양을 화면 좌표로 투영합니다.
+    faceCamera(sunCorona, from: arView.cameraTransform.translation)
+    let screenPosition = arView.project(sunSource.position(relativeTo: nil))
+    lensFlareView.update(
+        sunPosition: screenPosition,
+        intensity: flareIntensity,
+        phase: elapsedTime
+    )
 }

@@ -27,6 +27,28 @@ enum AirQualityVisualizationMapper {
         0.06 + normalizedUV(for: value) * 0.36
     }
 
+    /// 카메라가 태양을 정면으로 바라볼수록 렌즈 플레어를 부드럽게 강하게 만듭니다.
+    static func solarFlareIntensity(
+        cameraForward: SIMD3<Float>,
+        directionToSun: SIMD3<Float>
+    ) -> Float {
+        let cameraLengthSquared = simd_length_squared(cameraForward)
+        let sunLengthSquared = simd_length_squared(directionToSun)
+        guard cameraLengthSquared.isFinite,
+              sunLengthSquared.isFinite,
+              cameraLengthSquared > 0.0001,
+              sunLengthSquared > 0.0001 else {
+            return 0
+        }
+
+        let alignment = simd_dot(
+            cameraForward / sqrt(cameraLengthSquared),
+            directionToSun / sqrt(sunLengthSquared)
+        )
+        let linear = min(max((alignment - 0.80) / (0.985 - 0.80), 0), 1)
+        return linear * linear * (3 - 2 * linear)
+    }
+
     /// 기상 풍향은 바람이 불어오는 방향이므로 180도 반대인 먼지 이동 방향으로 변환합니다.
     /// `gravityAndHeading` 월드에서 X축은 동쪽, -Z축은 북쪽입니다.
     static func windTravelDirection(forMeteorologicalDegrees degrees: Double) -> SIMD2<Float> {

@@ -20,8 +20,10 @@ final class OpenMeteoAirQualityServiceTests: XCTestCase {
                     query["current"],
                     "temperature_2m,wind_speed_10m,wind_direction_10m"
                 )
+                XCTAssertEqual(query["daily"], "sunrise,sunset")
+                XCTAssertEqual(query["forecast_days"], "1")
                 XCTAssertEqual(query["wind_speed_unit"], "ms")
-                let json = #"{"current":{"temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315}}"#
+                let json = #"{"current":{"time":"2026-08-04T12:00","temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315},"daily":{"sunrise":["2026-08-04T05:30"],"sunset":["2026-08-04T19:30"]},"timezone":"Asia/Seoul","utc_offset_seconds":32400}"#
                 return (200, Data(json.utf8))
             }
             XCTAssertTrue(request.url?.absoluteString.contains("current=pm2_5,uv_index") == true)
@@ -38,12 +40,15 @@ final class OpenMeteoAirQualityServiceTests: XCTestCase {
         XCTAssertEqual(snapshot.uvIndex, 5.2)
         XCTAssertEqual(snapshot.windSpeed, 4.2)
         XCTAssertEqual(snapshot.windDirection, 315)
+        XCTAssertNotNil(snapshot.sunrise)
+        XCTAssertNotNil(snapshot.sunset)
+        XCTAssertTrue(snapshot.isSunVisible(at: try XCTUnwrap(makeDate("2026-08-04T12:00:00+09:00"))))
     }
 
     func testMissingFieldThrowsDecodingError() async {
         URLProtocolStub.handler = { request in
             if request.url?.host == "api.open-meteo.com" {
-                let json = #"{"current":{"temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315}}"#
+                let json = #"{"current":{"time":"2026-08-04T12:00","temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315},"daily":{"sunrise":["2026-08-04T05:30"],"sunset":["2026-08-04T19:30"]},"timezone":"Asia/Seoul","utc_offset_seconds":32400}"#
                 return (200, Data(json.utf8))
             }
             return (200, Data(#"{"current":{"time":"2026-08-04T12:00","pm2_5":13.4}}"#.utf8))
@@ -56,7 +61,7 @@ final class OpenMeteoAirQualityServiceTests: XCTestCase {
     func testInvalidJSONThrowsDecodingError() async {
         URLProtocolStub.handler = { request in
             if request.url?.host == "api.open-meteo.com" {
-                let json = #"{"current":{"temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315}}"#
+                let json = #"{"current":{"time":"2026-08-04T12:00","temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315},"daily":{"sunrise":["2026-08-04T05:30"],"sunset":["2026-08-04T19:30"]},"timezone":"Asia/Seoul","utc_offset_seconds":32400}"#
                 return (200, Data(json.utf8))
             }
             return (200, Data("not-json".utf8))
@@ -69,7 +74,7 @@ final class OpenMeteoAirQualityServiceTests: XCTestCase {
     func testHTTPErrorKeepsStatusCode() async {
         URLProtocolStub.handler = { request in
             if request.url?.host == "api.open-meteo.com" {
-                let json = #"{"current":{"temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315}}"#
+                let json = #"{"current":{"time":"2026-08-04T12:00","temperature_2m":27.6,"wind_speed_10m":4.2,"wind_direction_10m":315},"daily":{"sunrise":["2026-08-04T05:30"],"sunset":["2026-08-04T19:30"]},"timezone":"Asia/Seoul","utc_offset_seconds":32400}"#
                 return (200, Data(json.utf8))
             }
             return (503, Data())
@@ -83,6 +88,10 @@ final class OpenMeteoAirQualityServiceTests: XCTestCase {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLProtocolStub.self]
         return OpenMeteoAirQualityService(session: URLSession(configuration: configuration))
+    }
+
+    private func makeDate(_ value: String) -> Date? {
+        ISO8601DateFormatter().date(from: value)
     }
 
     private func assertThrows(

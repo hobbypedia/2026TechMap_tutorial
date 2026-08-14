@@ -1,0 +1,56 @@
+@Tutorial(time: 45) {
+    @Intro(title: "6단계: ARKit과 RealityKit 공간 만들기") {
+        카메라 화면 위에 붙는 그림이 아니라 사용자의 실제 공간에 고정되는 AR 월드를 만듭니다.
+
+        @Image(source: "world-coordinate-diagram.svg", alt: "카메라 좌표와 북쪽 기준 월드 좌표의 관계")
+    }
+
+    @Section(title: "두 프레임워크의 역할") {
+        @ContentAndMedia {
+            ARKit은 카메라와 모션 센서를 결합해 기기의 위치와 방향을 추적합니다. RealityKit은 그 좌표에 Entity, 재질, 빛과 파티클을 그립니다. ARView는 두 프레임워크가 만나는 화면입니다.
+        }
+        @Steps {
+            @Step {
+                UIViewRepresentable로 UIKit의 ARView를 SwiftUI 안에서 사용할 수 있게 감쌉니다.
+            }
+            @Step {
+                ARWorldTrackingConfiguration을 만들고 worldAlignment를 gravityAndHeading으로 지정합니다.
+
+                @Code(name: "AR 세션 시작", file: "04-ARSession.swift")
+            }
+            @Step {
+                ARCoachingOverlayView를 전체 화면에 붙여 사용자가 주변을 천천히 비추도록 안내합니다.
+            }
+        }
+    }
+
+    @Section(title: "월드 좌표 이해하기") {
+        @ContentAndMedia {
+            gravityAndHeading에서 Y축은 위쪽, X축은 동쪽, -Z축은 북쪽입니다. 카메라는 계속 움직이지만 AnchorEntity는 처음 정한 월드 위치에 남습니다.
+        }
+        @Steps {
+            @Step {
+                현재 카메라 transform에서 위치 열만 복사하고 회전은 항등행렬로 유지합니다.
+
+                @Code(name: "월드 앵커", file: "05-WorldCoordinate.swift")
+            }
+            @Step {
+                이 transform으로 AnchorEntity를 만들면 날씨의 북쪽 기준 풍향을 AR 축에 일관되게 대응할 수 있습니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인과 문제 해결") {
+        @ContentAndMedia {
+            완료 체크포인트: 추적이 정상화된 뒤 만든 Entity가 기기를 돌려도 같은 실제 공간 위치에 남습니다.
+        }
+        @Steps {
+            @Step {
+                시뮬레이터에서 ARWorldTrackingConfiguration이 지원되지 않는 것은 정상입니다. 컴파일은 시뮬레이터에서, 공간 확인은 실기기에서 합니다.
+            }
+            @Step {
+                추적이 limited면 밝고 특징이 있는 주변을 천천히 비춥니다. 이제 7단계 미세먼지 파티클로 이동합니다.
+            }
+        }
+    }
+}

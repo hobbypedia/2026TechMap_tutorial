@@ -43,7 +43,16 @@ struct AirQualityARView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
-        context.coordinator.connect(to: arView)
+        let lensFlareView = SolarLensFlareView()
+        lensFlareView.translatesAutoresizingMaskIntoConstraints = false
+        arView.addSubview(lensFlareView)
+        NSLayoutConstraint.activate([
+            lensFlareView.leadingAnchor.constraint(equalTo: arView.leadingAnchor),
+            lensFlareView.trailingAnchor.constraint(equalTo: arView.trailingAnchor),
+            lensFlareView.topAnchor.constraint(equalTo: arView.topAnchor),
+            lensFlareView.bottomAnchor.constraint(equalTo: arView.bottomAnchor)
+        ])
+        context.coordinator.connect(to: arView, lensFlareView: lensFlareView)
 
         guard ARWorldTrackingConfiguration.isSupported else {
             DispatchQueue.main.async {
@@ -86,13 +95,19 @@ struct AirQualityARView: UIViewRepresentable {
 
     final class Coordinator: NSObject, ARSessionDelegate {
         private weak var arView: ARView?
+        private weak var lensFlareView: SolarLensFlareView?
         private let controller: ARExperienceController
         private let entityFactory = AirQualityEntityFactory()
         private var activeAnchor: AnchorEntity?
         private var visualizationRoot: Entity?
         private var sceneUpdateSubscription: (any Cancellable)?
         private var particleEmitters: [Entity] = []
-        private var uvSpectrums: [Entity] = []
+        private var uvBeams: [Entity] = []
+        private var sunCoronas: [Entity] = []
+        private var sunlightGroup: Entity?
+        private var sunEntity: Entity?
+        private var sunlightSnapshot: AirQualitySnapshot?
+        private var normalizedUV: Float = 0
         private var elapsedTime: Float = 0
         private var appliedAnimationsEnabled: Bool?
         var animationsEnabled: Bool
@@ -109,8 +124,9 @@ struct AirQualityARView: UIViewRepresentable {
         }
 
         @MainActor
-        func connect(to arView: ARView) {
+        func connect(to arView: ARView, lensFlareView: SolarLensFlareView) {
             self.arView = arView
+            self.lensFlareView = lensFlareView
             arView.session.delegate = self
             controller.placeHandler = { [weak self] snapshot in self?.place(snapshot) }
             controller.updateHandler = { [weak self] snapshot in self?.update(snapshot) }
@@ -128,6 +144,7 @@ struct AirQualityARView: UIViewRepresentable {
             sceneUpdateSubscription?.cancel()
             sceneUpdateSubscription = nil
             removeAllVisualizations()
+            lensFlareView = nil
         }
 
         @MainActor
@@ -144,7 +161,7 @@ struct AirQualityARView: UIViewRepresentable {
             arView.scene.addAnchor(anchor)
             activeAnchor = anchor
             visualizationRoot = root
-            collectAnimatedEntities(in: root)
+            collectAnimatedEntities(in: root, snapshot: snapshot)
             controller.setPlaced(true)
         }
 
@@ -159,19 +176,31 @@ struct AirQualityARView: UIViewRepresentable {
         private func update(_ snapshot: AirQualitySnapshot) {
             guard let visualizationRoot else { return }
             entityFactory.updateVisualization(root: visualizationRoot, with: snapshot)
-            collectAnimatedEntities(in: visualizationRoot)
+            collectAnimatedEntities(in: visualizationRoot, snapshot: snapshot)
         }
 
         @MainActor
-        private func collectAnimatedEntities(in root: Entity) {
+        private func collectAnimatedEntities(in root: Entity, snapshot: AirQualitySnapshot) {
             particleEmitters.removeAll(keepingCapacity: true)
-            uvSpectrums.removeAll(keepingCapacity: true)
+            uvBeams.removeAll(keepingCapacity: true)
+            sunCoronas.removeAll(keepingCapacity: true)
+            sunlightGroup = nil
+            sunEntity = nil
+            sunlightSnapshot = snapshot
+            normalizedUV = AirQualityVisualizationMapper.normalizedUV(for: snapshot.uvIndex)
 
             func visit(_ entity: Entity) {
                 if entity.components.has(ParticleEmitterComponent.self) {
                     particleEmitters.append(entity)
-                } else if entity.name.hasPrefix("UVSpectrum-") {
-                    uvSpectrums.append(entity)
+                }
+                if entity.name == "SunlightGroup" {
+                    sunlightGroup = entity
+                } else if entity.name.hasPrefix("SunBeam-") {
+                    uvBeams.append(entity)
+                } else if entity.name.hasPrefix("SunCorona") {
+                    sunCoronas.append(entity)
+                } else if entity.name == "SunSource" {
+                    sunEntity = entity
                 }
                 entity.children.forEach(visit)
             }
@@ -182,14 +211,80 @@ struct AirQualityARView: UIViewRepresentable {
 
         @MainActor
         private func animate(deltaTime: Float) {
+            guard let arView else { return }
             updateParticleSimulationIfNeeded()
             if animationsEnabled {
                 elapsedTime += min(deltaTime, 0.1)
                 let pulse = 1 + sin(elapsedTime * 1.35) * 0.035
-                uvSpectrums.forEach { spectrum in
-                    spectrum.scale = [pulse, pulse, pulse]
+                uvBeams.forEach { beam in
+                    beam.scale = [pulse, pulse, pulse]
                 }
             }
+
+            let isSunVisible = sunlightSnapshot?.isSunVisible(at: Date()) ?? false
+            sunlightGroup?.isEnabled = isSunVisible
+            let cameraPosition = arView.cameraTransform.translation
+
+            // 코로나 평면은 카메라를 바라보므로 태양이 납작한 카드나 구로 보이지 않습니다.
+            sunCoronas.forEach { corona in
+                guard let parent = corona.parent else { return }
+                let localCameraPosition = parent.convert(position: cameraPosition, from: nil)
+                let direction = localCameraPosition - corona.position
+                if simd_length_squared(direction) > 0.0001 {
+                    corona.orientation = simd_quatf(
+                        from: [0, 0, 1],
+                        to: simd_normalize(direction)
+                    )
+                }
+                let pulse = animationsEnabled ? 1 + sin(elapsedTime * 1.05) * 0.03 : 1
+                corona.scale = [pulse, pulse, pulse]
+            }
+
+            updateLensFlare(in: arView)
+        }
+
+        /// 월드 태양을 화면 좌표로 투영해 정면으로 올려다볼 때 렌즈 플레어를 표시합니다.
+        @MainActor
+        private func updateLensFlare(in arView: ARView) {
+            guard let lensFlareView,
+                  let sunEntity,
+                  sunlightSnapshot?.isSunVisible(at: Date()) == true,
+                  let frame = arView.session.currentFrame else {
+                lensFlareView?.hide()
+                return
+            }
+
+            let cameraTransform = frame.camera.transform
+            let cameraPosition = SIMD3<Float>(
+                cameraTransform.columns.3.x,
+                cameraTransform.columns.3.y,
+                cameraTransform.columns.3.z
+            )
+            let cameraForward = -SIMD3<Float>(
+                cameraTransform.columns.2.x,
+                cameraTransform.columns.2.y,
+                cameraTransform.columns.2.z
+            )
+            let sunPosition = sunEntity.position(relativeTo: nil)
+            let directionToSun = sunPosition - cameraPosition
+            let alignment = AirQualityVisualizationMapper.solarFlareIntensity(
+                cameraForward: cameraForward,
+                directionToSun: directionToSun
+            )
+            let intensity = alignment * (0.66 + normalizedUV * 0.34)
+
+            guard intensity > 0.001,
+                  let screenPosition = arView.project(sunPosition),
+                  arView.bounds.insetBy(dx: -40, dy: -40).contains(screenPosition) else {
+                lensFlareView.hide()
+                return
+            }
+
+            lensFlareView.update(
+                sunPosition: screenPosition,
+                intensity: intensity,
+                phase: elapsedTime
+            )
         }
 
         @MainActor
@@ -210,7 +305,13 @@ struct AirQualityARView: UIViewRepresentable {
             activeAnchor = nil
             visualizationRoot = nil
             particleEmitters.removeAll()
-            uvSpectrums.removeAll(keepingCapacity: true)
+            uvBeams.removeAll(keepingCapacity: true)
+            sunCoronas.removeAll(keepingCapacity: true)
+            sunlightGroup = nil
+            sunEntity = nil
+            sunlightSnapshot = nil
+            normalizedUV = 0
+            lensFlareView?.hide()
             appliedAnimationsEnabled = nil
             elapsedTime = 0
             controller.setPlaced(false)

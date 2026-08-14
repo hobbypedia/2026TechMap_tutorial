@@ -1,0 +1,4 @@
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>현재 위치의 환경 데이터를 조회합니다.</string>
+<key>NSCameraUsageDescription</key>
+<string>환경 데이터를 주변 AR 공간에 표시합니다.</string>
