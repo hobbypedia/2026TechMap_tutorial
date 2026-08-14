@@ -128,7 +128,9 @@ final class AirQualityViewModel: ObservableObject {
                     pm25: response.pm25,
                     uvIndex: response.uvIndex,
                     windSpeed: response.windSpeed,
-                    windDirection: response.windDirection
+                    windDirection: response.windDirection,
+                    sunrise: response.sunrise,
+                    sunset: response.sunset
                 )
                 guard !Task.isCancelled, self?.requestGeneration == generation else { return }
                 self?.snapshot = snapshot

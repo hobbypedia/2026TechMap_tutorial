@@ -29,6 +29,44 @@ final class AirQualityVisualizationMapperTests: XCTestCase {
         )
     }
 
+    func testSolarFlareOnlyAppearsWhenCameraFacesSun() {
+        XCTAssertEqual(
+            AirQualityVisualizationMapper.solarFlareIntensity(
+                cameraForward: [0, 1, 0],
+                directionToSun: [0, 1, 0]
+            ),
+            1,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(
+            AirQualityVisualizationMapper.solarFlareIntensity(
+                cameraForward: [0, 0, -1],
+                directionToSun: [0, 1, 0]
+            ),
+            0,
+            accuracy: 0.001
+        )
+    }
+
+    func testSunVisibilityUsesSunriseAndSunset() {
+        let sunrise = Date(timeIntervalSince1970: 100)
+        let sunset = Date(timeIntervalSince1970: 200)
+        let snapshot = AirQualitySnapshot(
+            locationName: "테스트",
+            measuredAt: "",
+            temperature: 20,
+            pm25: 10,
+            uvIndex: 5,
+            sunrise: sunrise,
+            sunset: sunset
+        )
+
+        XCTAssertFalse(snapshot.isSunVisible(at: Date(timeIntervalSince1970: 99)))
+        XCTAssertTrue(snapshot.isSunVisible(at: Date(timeIntervalSince1970: 100)))
+        XCTAssertTrue(snapshot.isSunVisible(at: Date(timeIntervalSince1970: 199)))
+        XCTAssertFalse(snapshot.isSunVisible(at: Date(timeIntervalSince1970: 200)))
+    }
+
     func testSeverePM25UsesWiderEmitterField() {
         XCTAssertEqual(AirQualityVisualizationMapper.dustFieldRadius(forPM25: 75), 2.85)
         XCTAssertEqual(AirQualityVisualizationMapper.dustFieldRadius(forPM25: 76), 3.25)

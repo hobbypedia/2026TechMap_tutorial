@@ -1,32 +1,32 @@
-let normalized = min(max(Float(uvIndex / 11), 0), 1)
-let texture = try? TextureResource.load(named: "UVSpectrum")
-var material = UnlitMaterial()
-material.color = .init(
-    tint: .white,
-    texture: texture.map { resource in .init(resource) }
+let sunlightGroup = Entity()
+sunlightGroup.name = "SunlightGroup"
+sunlightGroup.isEnabled = snapshot.isSunVisible()
+
+let normalizedUV = min(max(Float(snapshot.uvIndex / 11), 0), 1)
+let beamMaterial = makeUVMaterial(
+    normalizedUV: normalizedUV,
+    opacity: (0.06 + normalizedUV * 0.36) * 0.26
 )
-let opacity = (0.06 + normalized * 0.36) * 0.35
-material.blending = .transparent(opacity: opacity)
 
-let uvGroup = Entity()
-let size = 1.65 + normalized * 0.35
-let beamCount = 8
-let sourceHeight: Float = 1.45
-let radialOffset: Float = 0.6
-let halfHeight = size * 0.5
-let tilt = asin(min(radialOffset / halfHeight, 0.95))
-let centerHeight = sourceHeight - cos(tilt) * halfHeight
-
-for index in 0..<beamCount {
-    let yaw = Float(index) * 2 * .pi / Float(beamCount)
-    let yawRotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
-    let tiltRotation = simd_quatf(angle: tilt, axis: [1, 0, 0])
-    let spectrum = ModelEntity(
-        mesh: .generatePlane(width: size, height: size),
-        materials: [material]
+// 교차한 두 평면은 이미지 에셋 대신 Metal 셰이더로 햇빛을 그립니다.
+for index in 0..<2 {
+    let beam = ModelEntity(
+        mesh: .generatePlane(width: 2.8, height: 2.8),
+        materials: [beamMaterial]
     )
-    spectrum.name = "UVSpectrum-" + String(index)
-    spectrum.position = yawRotation.act([0, centerHeight, -radialOffset])
-    spectrum.orientation = yawRotation * tiltRotation
-    uvGroup.addChild(spectrum)
+    beam.name = "SunBeam-" + String(index)
+    beam.orientation = simd_quatf(
+        angle: Float(index) * .pi / 2,
+        axis: [0, 1, 0]
+    )
+    sunlightGroup.addChild(beam)
 }
+
+// 코로나 셰이더 평면은 매 프레임 카메라를 향하게 회전합니다.
+let corona = ModelEntity(
+    mesh: .generatePlane(width: 0.9, height: 0.9),
+    materials: [makeSunCoronaMaterial(normalizedUV: normalizedUV)]
+)
+corona.name = "SunCorona"
+corona.position = [0, 2.4, 0]
+sunlightGroup.addChild(corona)

@@ -33,6 +33,8 @@
 		A00000000000000000000021 /* AirQualityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000021 /* AirQualityViewModelTests.swift */; };
 		A00000000000000000000022 /* AirQualityVisualizationMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */; };
 		A00000000000000000000023 /* AirQualityLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000023 /* AirQualityLevelTests.swift */; };
+		A00000000000000000000025 /* UVBeamShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000025 /* UVBeamShader.metal */; };
+		A00000000000000000000026 /* SolarLensFlareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000000000000000000026 /* SolarLensFlareView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +75,8 @@
 		F00000000000000000000021 /* AirQualityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityViewModelTests.swift; sourceTree = "<group>"; };
 		F00000000000000000000022 /* AirQualityVisualizationMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityVisualizationMapperTests.swift; sourceTree = "<group>"; };
 		F00000000000000000000023 /* AirQualityLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirQualityLevelTests.swift; sourceTree = "<group>"; };
+		F00000000000000000000025 /* UVBeamShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = UVBeamShader.metal; sourceTree = "<group>"; };
+		F00000000000000000000026 /* SolarLensFlareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolarLensFlareView.swift; sourceTree = "<group>"; };
 		F00000000000000000000100 /* AirAR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AirAR.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F00000000000000000000101 /* AirARTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AirARTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -187,6 +191,8 @@
 				F00000000000000000000009 /* simd_float4x4+Translation.swift */,
 				F0000000000000000000000A /* AirQualityEntityFactory.swift */,
 				F0000000000000000000000B /* AirQualityARView.swift */,
+				F00000000000000000000026 /* SolarLensFlareView.swift */,
+				F00000000000000000000025 /* UVBeamShader.metal */,
 			);
 			path = AR;
 			sourceTree = "<group>";
@@ -358,6 +364,8 @@
 				A00000000000000000000009 /* simd_float4x4+Translation.swift in Sources */,
 				A0000000000000000000000A /* AirQualityEntityFactory.swift in Sources */,
 				A0000000000000000000000B /* AirQualityARView.swift in Sources */,
+				A00000000000000000000026 /* SolarLensFlareView.swift in Sources */,
+				A00000000000000000000025 /* UVBeamShader.metal in Sources */,
 				A0000000000000000000000C /* MetricView.swift in Sources */,
 				A0000000000000000000000D /* AirQualityStatusPanel.swift in Sources */,
 				A0000000000000000000000E /* ARControlPanel.swift in Sources */,
@@ -434,7 +442,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K6XS72V3A5;
+				DEVELOPMENT_TEAM = QF62GD89Z2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AirAR/Info.plist;
 				MARKETING_VERSION = 1.0;
@@ -455,7 +463,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K6XS72V3A5;
+				DEVELOPMENT_TEAM = QF62GD89Z2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AirAR/Info.plist;
 				MARKETING_VERSION = 1.0;

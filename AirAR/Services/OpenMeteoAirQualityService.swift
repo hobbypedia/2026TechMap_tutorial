@@ -37,6 +37,8 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
                         name: "current",
                         value: "temperature_2m,wind_speed_10m,wind_direction_10m"
                     ),
+                    URLQueryItem(name: "daily", value: "sunrise,sunset"),
+                    URLQueryItem(name: "forecast_days", value: "1"),
                     URLQueryItem(name: "wind_speed_unit", value: "ms")
                 ]
             )
@@ -44,6 +46,7 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
             async let airResponse: AirQualityAPIResponse = fetch(AirQualityAPIResponse.self, from: airURL)
             async let weatherResponse: WeatherForecastAPIResponse = fetch(WeatherForecastAPIResponse.self, from: weatherURL)
             let (air, weather) = try await (airResponse, weatherResponse)
+            let (sunrise, sunset) = try makeSunTimes(from: weather)
 
             return AirQualitySnapshot(
                 locationName: "현재 위치",
@@ -52,7 +55,9 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
                 pm25: air.current.pm25,
                 uvIndex: air.current.uvIndex,
                 windSpeed: weather.current.windSpeed,
-                windDirection: weather.current.windDirection
+                windDirection: weather.current.windDirection,
+                sunrise: sunrise,
+                sunset: sunset
             )
         } catch is CancellationError {
             throw AirQualityServiceError.cancelled
@@ -63,6 +68,28 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         } catch {
             throw AirQualityServiceError.networkFailed
         }
+    }
+
+    /// timezone=auto로 받은 현지 ISO 8601 문자열을 절대 시각으로 변환합니다.
+    private func makeSunTimes(from response: WeatherForecastAPIResponse) throws -> (Date, Date) {
+        guard let sunriseText = response.daily.sunrise.first,
+              let sunsetText = response.daily.sunset.first else {
+            throw AirQualityServiceError.decodingFailed
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
+        formatter.timeZone = TimeZone(identifier: response.timezone)
+            ?? TimeZone(secondsFromGMT: response.utcOffsetSeconds)
+
+        guard let sunrise = formatter.date(from: sunriseText),
+              let sunset = formatter.date(from: sunsetText),
+              sunrise < sunset else {
+            throw AirQualityServiceError.decodingFailed
+        }
+        return (sunrise, sunset)
     }
 
     private func makeURL(base: String, queryItems: [URLQueryItem]) throws -> URL {

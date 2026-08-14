@@ -1,0 +1,69 @@
+@Tutorial(time: 20) {
+    @Intro(title: "1단계: Xcode 프로젝트 만들기") {
+        코드를 처음 접하는 학습자가 AirAR의 빈 iOS 프로젝트를 만들고 실제 기기 실행 준비까지 마칩니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "이번 과정에서 완성할 AirAR 앱")
+    }
+
+    @Section(title: "시작하기 전에") {
+        @ContentAndMedia {
+            이 단계에는 Swift 경험이 필요하지 않습니다. macOS, Xcode 16 이상, iOS 18 이상을 실행하는 ARKit 지원 iPhone 또는 iPad, Apple ID가 필요합니다. 시뮬레이터는 화면과 테스트에는 유용하지만 카메라 기반 AR 월드 추적은 검증할 수 없습니다.
+        }
+        @Steps {
+            @Step {
+                Xcode를 실행하고 Settings의 Platforms에서 iOS 지원 항목이 설치되어 있는지 확인합니다.
+            }
+            @Step {
+                실기기를 케이블 또는 같은 네트워크로 연결하고 기기에서 개발자 모드를 허용합니다.
+            }
+        }
+    }
+
+    @Section(title: "iOS 앱 생성하기") {
+        @ContentAndMedia {
+            프로젝트는 앱의 소스, 리소스, 빌드 설정을 한곳에서 관리합니다. Target은 어떤 실행 결과물을 만들지 정의하고, Bundle Identifier는 설치되는 앱을 구별하는 고유 이름입니다.
+        }
+        @Steps {
+            @Step {
+                File > New > Project를 선택하고 iOS의 App 템플릿을 선택합니다.
+            }
+            @Step {
+                Product Name은 AirAR, Interface는 SwiftUI, Language는 Swift로 지정합니다. Core Data와 Tests 옵션은 이 단계에서 선택하지 않아도 됩니다.
+            }
+            @Step {
+                프로젝트를 저장한 뒤 AirAR Target의 General에서 Minimum Deployments를 iOS 18.0으로 맞춥니다.
+            }
+            @Step {
+                Signing & Capabilities에서 자신의 Team을 선택합니다. Bundle Identifier가 다른 앱과 겹치면 조직 도메인을 뒤집은 고유 문자열로 바꿉니다.
+            }
+        }
+    }
+
+    @Section(title: "첫 실행과 완료 확인") {
+        @ContentAndMedia {
+            Scheme은 어떤 Target을 어떤 설정으로 빌드할지 나타냅니다. 상단 Scheme을 AirAR로, 실행 대상을 연결한 iPhone으로 선택합니다.
+        }
+        @Steps {
+            @Step {
+                Command-B로 빌드합니다. 오류 없이 Build Succeeded가 표시되는지 확인합니다.
+            }
+            @Step {
+                Command-R로 실행합니다. 기본 Hello, world 화면이 기기에 나타나면 1단계가 끝났습니다.
+            }
+            @Step {
+                서명 오류가 나면 Team, Bundle Identifier, 기기의 개발자 모드와 신뢰 상태를 차례로 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "다음 단계") {
+        @ContentAndMedia {
+            완료 체크포인트: AirAR 프로젝트가 열리고, iOS 18로 빌드되며, 실기기에서 기본 화면이 실행됩니다. 이제 2단계 Swift와 SwiftUI 최소 기초로 이동합니다.
+        }
+        @Steps {
+            @Step {
+                목차로 돌아가 2단계 Swift와 SwiftUI 최소 기초를 선택합니다.
+            }
+        }
+    }
+}
