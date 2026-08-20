@@ -1,0 +1,75 @@
+@Tutorial(time: 60) {
+    @Intro(title: "8단계: UV와 태양을 빛으로 표현하기") {
+        이미지 에셋 없이 Metal 셰이더로 햇빛, 태양 코로나와 뾰족한 광선을 만들고 낮에만 표시합니다.
+
+        @Image(source: "uv-visualization.svg", alt: "셰이더 기반 태양과 햇빛 빔")
+    }
+
+    @Section(title: "CustomMaterial과 Metal 이해하기") {
+        @ContentAndMedia {
+            shader는 GPU가 많은 화면 점을 동시에 계산하는 작은 프로그램입니다. UV 좌표는 평면의 왼쪽 아래부터 오른쪽 위까지를 0...1 값으로 나타냅니다. 이미지 대신 이 좌표의 거리와 각도로 빛 모양을 계산합니다.
+        }
+        @Steps {
+            @Step {
+                uvBeamSurface에서 광원 가까이는 좁고 아래로 갈수록 넓어지는 마스크와 가장자리 페이드를 만듭니다.
+            }
+            @Step {
+                sunCoronaSurface에서 중심 거리로 흰 원반과 금빛 헤일로를, 여러 각도 주기로 길이가 다른 뾰족한 광선을 만듭니다.
+
+                @Code(name: "UVBeamShader.metal", file: "07-UVBeamShader.metal")
+            }
+            @Step {
+                Metal 함수를 Xcode Target의 Compile Sources에 포함하고 default library에서 SurfaceShader를 찾습니다.
+            }
+        }
+    }
+
+    @Section(title: "RealityKit 태양 만들기") {
+        @ContentAndMedia {
+            실제 구 메시는 플라스틱 공처럼 보일 수 있습니다. 따라서 카메라를 향하는 평면 하나에 중심광과 코로나를 그리고, 교차한 두 평면에는 아래로 퍼지는 빔을 그립니다.
+        }
+        @Steps {
+            @Step {
+                CustomMaterial의 custom.value로 정규화된 UV Index와 불투명도를 Metal에 전달합니다.
+            }
+            @Step {
+                사용자 위 2.4m 위치에 SunCorona와 화면 투영 기준인 SunSource를 배치합니다.
+
+                @Code(name: "UV 시각화", file: "07-UVVisualization.swift")
+            }
+            @Step {
+                매 프레임 코로나가 카메라를 향하게 하고 작은 맥동을 적용합니다.
+            }
+        }
+    }
+
+    @Section(title: "렌즈 플레어와 낮·밤") {
+        @ContentAndMedia {
+            월드 태양을 ARView.project로 화면 좌표에 옮깁니다. 카메라 정면 벡터와 태양 방향의 내적이 1에 가까울수록 올려다보는 상태이므로 방사광, 링과 렌즈 고스트를 강하게 표시합니다.
+        }
+        @Steps {
+            @Step {
+                Core Animation의 radial gradient와 shape layer로 화면 공간 플레어를 만듭니다.
+
+                @Code(name: "렌즈 플레어", file: "07-SolarLensFlare.swift")
+            }
+            @Step {
+                현재 Date가 sunrise 이상 sunset 미만일 때만 SunlightGroup과 플레어를 표시합니다.
+            }
+            @Step {
+                Xcode가 Metal Toolchain 누락을 알리면 Settings > Components에서 설치합니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인") {
+        @ContentAndMedia {
+            완료 체크포인트: 낮에는 머리 위 태양과 빔이 보이고 정면으로 올려다볼수록 뾰족한 광선과 렌즈 고스트가 강해집니다. 일몰 후에는 태양 그룹 전체가 사라집니다. 이제 9단계 통합으로 이동합니다.
+        }
+        @Steps {
+            @Step {
+                낮과 밤 조건을 모두 확인한 뒤 목차에서 9단계 전체 화면 통합을 선택합니다.
+            }
+        }
+    }
+}
