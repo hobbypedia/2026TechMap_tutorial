@@ -2,7 +2,7 @@ name: Deploy DocC to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Print Xcode version
         run: xcodebuild -version

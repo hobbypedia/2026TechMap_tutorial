@@ -127,11 +127,11 @@ Xcode의 Product → Build Documentation으로도 튜토리얼을 열 수 있습
 
 ## GitHub Pages
 
-`main`에 Push하거나 Actions에서 `Deploy DocC to GitHub Pages`를 수동 실행하면 DocC 아카이브를 정적 호스팅 형식으로 변환해 배포합니다.
+`dev`에 Push하거나 Actions에서 `Deploy DocC to GitHub Pages`를 수동 실행하면 DocC 아카이브를 정적 호스팅 형식으로 변환해 배포합니다.
 
 1. GitHub 저장소의 Settings → Pages로 이동합니다.
 2. Source를 **GitHub Actions**로 설정합니다.
-3. `main`에 워크플로를 포함한 변경을 Push합니다.
+3. `dev`에 워크플로를 포함한 변경을 Push합니다.
 
 프로젝트 저장소 이름을 Hosting Base Path로 사용하므로 사용자/조직 사이트가 아닌 프로젝트 사이트에서도 상대 링크가 작동합니다.
 
