@@ -1,0 +1,57 @@
+@Tutorial(time: 30) {
+    @Intro(title: "2단계: Swift와 SwiftUI 최소 기초") {
+        AirAR 코드를 읽는 데 꼭 필요한 Swift 문법과 SwiftUI의 상태 기반 화면 구성을 작은 예제로 익힙니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "상태가 바뀌면 다시 그려지는 SwiftUI 화면")
+    }
+
+    @Section(title: "값, 함수와 타입 이해하기") {
+        @ContentAndMedia {
+            let은 바뀌지 않는 값, var는 바뀔 수 있는 값입니다. String은 글자, Double은 소수, Bool은 참과 거짓을 담는 타입입니다. struct는 서로 관련된 값과 동작을 하나의 새 타입으로 묶습니다.
+        }
+        @Steps {
+            @Step {
+                Xcode에서 App 폴더를 만들고 기본 앱 진입 파일을 확인합니다. @main은 앱이 시작되는 위치를 뜻합니다.
+
+                @Code(name: "AirARApp.swift", file: "00-SwiftUIBasics.swift")
+            }
+            @Step {
+                함수는 이름이 붙은 작업입니다. 입력값은 매개변수, 함수가 돌려주는 값은 반환값이라고 부릅니다.
+            }
+            @Step {
+                async 함수는 네트워크처럼 기다림이 필요한 작업을 표현하고, await는 그 결과를 비동기적으로 기다립니다.
+            }
+        }
+    }
+
+    @Section(title: "SwiftUI 화면 읽기") {
+        @ContentAndMedia {
+            View는 화면의 한 조각입니다. body는 지금 상태에서 화면이 어떻게 보여야 하는지를 선언합니다. VStack은 위아래, HStack은 좌우, ZStack은 앞뒤로 View를 배치합니다.
+        }
+        @Steps {
+            @Step {
+                `@State`는 한 View가 소유하는 작은 상태입니다. 값이 바뀌면 SwiftUI가 body를 다시 계산합니다.
+            }
+            @Step {
+                `@StateObject`는 화면보다 오래 살아야 하는 참조 타입 상태를 한 번 생성해 보관합니다. AirAR에서는 ViewModel과 AR 컨트롤러에 사용합니다.
+            }
+            @Step {
+                Preview 또는 시뮬레이터에서 버튼을 눌러 상태에 따라 Text가 바뀌는지 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인과 흔한 오류") {
+        @ContentAndMedia {
+            완료 체크포인트: let과 var, struct, 함수, View, body, @State의 역할을 자신의 말로 설명할 수 있습니다.
+        }
+        @Steps {
+            @Step {
+                Cannot find in scope 오류는 이름의 철자와 파일이 앱 Target에 포함됐는지 확인합니다.
+            }
+            @Step {
+                body 관련 오류는 중괄호 짝과 View를 반환하는지 확인합니다. 이제 3단계 위치와 권한으로 이동합니다.
+            }
+        }
+    }
+}

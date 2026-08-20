@@ -1,0 +1,45 @@
+@Tutorials(name: "현재 위치의 환경 데이터를 AR로 시각화하기") {
+    @Intro(title: "수치를 공간의 분위기로 바꾸기") {
+        Open-Meteo의 기온, PM2.5, UV Index와 바람을 받아 미세먼지가 실제 풍향으로 날리는 iOS AR 앱을 완성합니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "AR 카메라 안에 미세먼지와 자외선 오브젝트가 떠 있는 앱 개념도")
+    }
+
+    @Chapter(name: "1. 앱의 기초 만들기") {
+        Xcode 프로젝트를 만들고 SwiftUI의 최소 문법과 위치 권한을 익힙니다. 앞 단계를 완료한 뒤 다음 튜토리얼로 이동하세요.
+
+        @Image(source: "air-ar-hero.svg", alt: "AirAR 앱을 단계별로 만드는 학습 과정")
+
+        @TutorialReference(tutorial: "doc:Step-01-Create-Project")
+        @TutorialReference(tutorial: "doc:Step-02-SwiftUI-Basics")
+        @TutorialReference(tutorial: "doc:Step-03-Location-Permission")
+    }
+
+    @Chapter(name: "2. 실제 환경 데이터 가져오기") {
+        REST API와 JSON을 이해하고, 앱 상태를 안전하게 관리합니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "Open-Meteo 데이터가 앱으로 전달되는 과정")
+
+        @TutorialReference(tutorial: "doc:Step-04-REST-API")
+        @TutorialReference(tutorial: "doc:Step-05-ViewModel")
+    }
+
+    @Chapter(name: "3. 데이터를 AR 공간으로 바꾸기") {
+        AR 좌표계를 만들고 미세먼지와 태양을 RealityKit으로 표현합니다.
+
+        @Image(source: "world-coordinate-diagram.svg", alt: "카메라 좌표와 AR 월드 좌표")
+
+        @TutorialReference(tutorial: "doc:Step-06-AR-Foundation")
+        @TutorialReference(tutorial: "doc:Step-07-Particle-Emitter")
+        @TutorialReference(tutorial: "doc:Step-08-UV-Sun")
+    }
+
+    @Chapter(name: "4. 앱 완성하고 검증하기") {
+        모든 계층을 한 화면에 연결하고 테스트와 실제 기기 검증을 마칩니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "완성된 AirAR 앱")
+
+        @TutorialReference(tutorial: "doc:Step-09-Integration")
+        @TutorialReference(tutorial: "doc:Step-10-Test-and-Finish")
+    }
+}

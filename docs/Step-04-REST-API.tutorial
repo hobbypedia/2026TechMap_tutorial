@@ -1,0 +1,59 @@
+@Tutorial(time: 55) {
+    @Intro(title: "4단계: REST API로 환경 데이터 가져오기") {
+        인터넷 주소를 단순히 여는 것과 API 요청의 차이를 이해하고 Open-Meteo JSON을 앱 모델로 변환합니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "두 Open-Meteo API 응답을 하나의 환경 스냅샷으로 합치는 과정")
+    }
+
+    @Section(title: "REST API 용어 익히기") {
+        @ContentAndMedia {
+            API는 프로그램끼리 약속된 형식으로 데이터를 주고받는 창구입니다. REST API는 HTTP 규칙을 활용합니다. endpoint는 요청 주소, GET은 데이터를 읽는 방식, query parameter는 주소 뒤에 붙는 입력값입니다. HTTPS는 전송 내용을 암호화합니다.
+        }
+        @Steps {
+            @Step {
+                latitude와 longitude는 현재 위치, current와 daily는 받을 항목, timezone은 시간 기준을 지정한다는 것을 확인합니다.
+            }
+            @Step {
+                JSON은 키와 값으로 이루어진 텍스트 데이터입니다. Decodable DTO는 JSON 구조를 Swift 타입으로 옮기는 전용 모델입니다.
+            }
+            @Step {
+                URLComponents와 URLQueryItem을 사용하면 특수 문자를 안전하게 인코딩한 URL을 만들 수 있습니다.
+            }
+        }
+    }
+
+    @Section(title: "두 API를 병렬 요청하기") {
+        @ContentAndMedia {
+            Forecast API에서는 기온, 바람, 일출과 일몰을 받고 Air Quality API에서는 PM2.5와 UV Index를 받습니다. async let은 서로 의존하지 않는 두 요청을 동시에 시작해 대기 시간을 줄입니다.
+        }
+        @Steps {
+            @Step {
+                JSON 응답과 화면 모델을 분리하고 AirQualitySnapshot에 앱이 사용할 값만 모읍니다.
+
+                @Code(name: "AirQualitySnapshot.swift", file: "01-AirQualitySnapshot.swift")
+            }
+            @Step {
+                URLSession으로 GET 요청하고 HTTP 200...299인지 확인한 뒤 JSONDecoder로 DTO를 해석합니다.
+
+                @Code(name: "OpenMeteoAirQualityService.swift", file: "02-OpenMeteoAirQualityService.swift")
+            }
+            @Step {
+                daily=sunrise,sunset, forecast_days=1, timezone=auto를 보내고 응답 시간대로 Date를 만듭니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인과 문제 해결") {
+        @ContentAndMedia {
+            완료 체크포인트: 현재 좌표로 기온, PM2.5, UV, 바람, 일출과 일몰이 포함된 AirQualitySnapshot을 얻습니다.
+        }
+        @Steps {
+            @Step {
+                decodingFailed가 나면 실제 JSON 키와 CodingKeys 철자를 비교합니다. 숫자와 문자열 타입도 일치해야 합니다.
+            }
+            @Step {
+                네트워크 오류와 취소를 구분해 취소된 새로고침이 실패 화면으로 보이지 않게 합니다. 이제 5단계 ViewModel로 이동합니다.
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+@Tutorial(time: 45) {
+    @Intro(title: "7단계: 미세먼지를 파티클로 표현하기") {
+        PM2.5 숫자를 사용자 주변에 떠다니는 황토색 입자의 밀도와 움직임으로 바꿉니다.
+
+        @Image(source: "pm25-visualization.svg", alt: "사용자 주변에 분포한 미세먼지 파티클")
+    }
+
+    @Section(title: "ParticleEmitterComponent 이해하기") {
+        @ContentAndMedia {
+            emitter는 작은 입자를 계속 만들어 내는 방출기입니다. emitterShape는 생성 공간, birthRate는 초당 개수, lifeSpan은 입자가 살아 있는 시간입니다. 이 앱은 별도 이미지 없이 RealityKit의 기본 원형 파티클을 사용합니다.
+        }
+        @Steps {
+            @Step {
+                Entity 하나를 만들고 ParticleEmitterComponent의 방출 모양을 sphere로 지정합니다.
+            }
+            @Step {
+                birthLocation을 volume으로 지정해 표면이 아니라 사용자 주변 부피 전체에서 입자가 생기게 합니다.
+            }
+            @Step {
+                크기, 수명, 투명도 곡선, 노이즈와 황토색을 설정합니다.
+
+                @Code(name: "PM2.5 파티클", file: "06-PM25Visualization.swift")
+            }
+        }
+    }
+
+    @Section(title: "환경 값을 움직임으로 바꾸기") {
+        @ContentAndMedia {
+            API 풍향은 바람이 불어오는 방향입니다. 먼지가 이동할 방향은 그 반대이므로 180도를 뒤집습니다. 실제 풍속은 AR에서 너무 빠르지 않도록 제한된 시각 속도로 매핑합니다.
+        }
+        @Steps {
+            @Step {
+                PM2.5가 높을수록 birthRate를 올리고 심각 구간에서는 방출 영역도 넓힙니다.
+            }
+            @Step {
+                정북 0도의 기상 각도를 XZ 평면 벡터로 바꾸고 component.emissionDirection에 넣습니다.
+            }
+            @Step {
+                접근성의 동작 줄이기가 켜지면 simulationState를 pause로 바꿉니다.
+            }
+        }
+    }
+
+    @Section(title: "완료 확인과 문제 해결") {
+        @ContentAndMedia {
+            완료 체크포인트: PM2.5가 높아지면 입자 밀도가 증가하고, 바람 방향과 속도에 따라 360도 공간의 먼지가 이동합니다.
+        }
+        @Steps {
+            @Step {
+                입자가 보이지 않으면 birthRate, lifeSpan, alpha와 Entity가 Anchor의 자식인지 확인합니다.
+            }
+            @Step {
+                하얀 덩어리처럼 보이면 입자 크기와 불투명도를 낮춥니다. 이제 8단계 UV와 태양으로 이동합니다.
+            }
+        }
+    }
+}

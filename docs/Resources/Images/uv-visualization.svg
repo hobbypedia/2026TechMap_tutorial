@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+<title id="title">UV Index 0...11 게이지</title><desc id="desc">실제 앱 화면이 아닌 구현 구조를 설명하는 개념도</desc>
+<rect width="1200" height="675" rx="36" fill="#071C2A"/>
+<text x="70" y="90" fill="white" font-family="-apple-system, sans-serif" font-size="42" font-weight="700">UV Index 0...11 게이지</text>
+<text x="70" y="132" fill="#9CC3D5" font-family="-apple-system, sans-serif" font-size="22">구현 구조를 설명하는 개념도</text>
+<g stroke="#62D9F5" stroke-width="5" fill="none"><rect x="520" y="200" width="160" height="360" rx="60"/><rect x="555" y="325" width="90" height="200" rx="35" fill="#62D9F5"/><path d="M750 520V210 M735 225l15-25 15 25"/></g>
+</svg>
