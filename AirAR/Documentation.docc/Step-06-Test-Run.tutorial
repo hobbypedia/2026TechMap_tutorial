@@ -1,0 +1,72 @@
+@Tutorial(time: 30) {
+    @Intro(title: "6단계: 자동 테스트와 아이폰 실행으로 완성 확인하기") {
+        실제 서버나 GPS에 의존하지 않는 단위 테스트로 핵심 규칙을 검증하고, 서명·권한·네트워크·증강현실 체크리스트를 실제 기기에서 확인합니다. 마지막 항목까지 통과하면 AirAR가 학습자 자신의 Xcode 프로젝트와 아이폰에서 실행되는 상태입니다.
+
+        @Image(source: "air-ar-hero.svg", alt: "테스트를 통과하고 실제 기기에서 실행되는 AirAR 앱")
+    }
+
+    @Section(title: "앱 코드를 자동 검사할 테스트 대상 만들기") {
+        @ContentAndMedia {
+            테스트는 같은 입력에 항상 같은 결과가 나오는 등급·방향·낮과 밤 계산과, 가짜 위치·가짜 서버를 넣을 수 있는 ViewModel·서비스 동작을 확인합니다. 프로젝트 생성 시 Unit Tests를 선택하지 않았다면 File > New > Target > Unit Testing Bundle을 추가하고 Product Name을 `AirARTests`, Target to be Tested를 AirAR로 지정합니다. 아래 네 파일은 AirARTests Target에만 포함합니다.
+        }
+        @Steps {
+            @Step {
+                `AirQualityLevelTests.swift`를 만들고 온도, 미세먼지와 자외선 값이 경계값 전후에서 올바른 다섯 단계로 분류되는지 검사합니다.
+
+                @Code(name: "AirQualityLevelTests.swift", file: "06-AirQualityLevelTests.swift")
+            }
+            @Step {
+                `OpenMeteoAirQualityServiceTests.swift`를 만들고 URL 요청을 가짜 응답으로 바꿔 두 API의 해석, 요청 항목, 서버 오류와 잘못된 JSON 처리를 검사합니다. 테스트 중 실제 Open-Meteo 서버는 호출하지 않습니다.
+
+                @Code(name: "OpenMeteoAirQualityServiceTests.swift", file: "06-OpenMeteoAirQualityServiceTests.swift")
+            }
+            @Step {
+                `AirQualityViewModelTests.swift`를 만들고 가짜 위치·환경 서비스를 사용해 로딩 성공, 오류, 재시도, 권한 거부와 설정 화면 이동을 검사합니다.
+
+                @Code(name: "AirQualityViewModelTests.swift", file: "06-AirQualityViewModelTests.swift")
+            }
+            @Step {
+                `AirQualityVisualizationMapperTests.swift`를 만들고 PM2.5 입자량, 풍향·풍속 벡터, UV 세기, 태양 정면 각도와 일출·일몰 판정을 검사합니다.
+
+                @Code(name: "AirQualityVisualizationMapperTests.swift", file: "06-AirQualityVisualizationMapperTests.swift")
+            }
+        }
+    }
+
+    @Section(title: "앱 빌드와 단위 테스트 모두 통과하기") {
+        @ContentAndMedia {
+            앱 빌드는 모든 Swift 파일과 Metal 셰이더가 하나의 실행 파일로 연결되는지 확인하고, 단위 테스트는 데이터 처리와 시각화 계산이 예상대로 동작하는지 확인합니다. 테스트는 시뮬레이터에서 실행해도 되지만 증강현실 카메라 자체는 다음 절에서 실제 기기로 확인합니다.
+        }
+        @Steps {
+            @Step {
+                Xcode 상단에서 AirAR Scheme을 선택하고 Product > Build를 실행합니다. Issue Navigator에 오류가 없고 `Build Succeeded`가 나타나는지 확인합니다.
+            }
+            @Step {
+                실행 대상을 iOS 18 이상 시뮬레이터로 바꾸고 Product > Test를 실행합니다. Test Navigator에서 네 테스트 파일의 모든 항목에 초록색 체크가 표시되는지 확인합니다. `No such module AirAR`가 나오면 AirARTests Target의 General 또는 Build Settings에서 Host Application과 Target to be Tested가 AirAR인지 확인합니다.
+            }
+            @Step {
+                테스트가 실패하면 실패한 함수의 기대값과 실제값을 먼저 비교합니다. 컴파일 오류라면 코드 블록 제목과 Xcode 파일 이름이 같은지, 앱 Swift 파일은 AirAR에, 테스트 파일은 AirARTests에 한 번씩만 포함됐는지 확인합니다.
+            }
+        }
+    }
+
+    @Section(title: "내 아이폰에서 모든 기능을 직접 확인하기") {
+        @ContentAndMedia {
+            시뮬레이터의 빌드와 테스트 성공만으로는 카메라 권한, 모션 센서, 월드 공간 고정과 GPU 광학 효과를 확인할 수 없습니다. AirAR Scheme의 실행 대상을 ARKit 지원 실제 기기로 다시 바꾸고 아래 항목을 순서대로 확인해야 전체 과정을 완료한 것입니다.
+        }
+        @Steps {
+            @Step {
+                앱을 삭제 후 다시 설치하거나 설정에서 권한을 초기화한 뒤 실행합니다. 위치는 `앱을 사용하는 동안 허용`, 카메라는 허용을 선택하고 현재 지역 이름과 온도·미세먼지·자외선 수치가 나타나는지 확인합니다.
+            }
+            @Step {
+                카메라 추적이 준비된 뒤 기기를 360도 천천히 돌리고 몇 걸음 이동합니다. 먼지와 태양이 화면에 붙어 따라오지 않고 최초 월드 위치에 남으며, 먼지가 현재 풍향의 반대 방향과 풍속에 맞춰 이동하는지 확인합니다.
+            }
+            @Step {
+                낮에는 태양·빛줄기·렌즈 플레어가 보이고 태양을 정면으로 볼수록 강해지는지 확인합니다. 밤에는 태양이 숨겨져야 합니다. iPhone 설정 > 손쉬운 사용 > 동작 > 동작 줄이기를 켜면 파티클과 맥동이 멈추는지도 확인합니다.
+            }
+            @Step {
+                Wi-Fi와 셀룰러 데이터를 잠시 끈 상태의 네트워크 오류, 설정에서 위치 권한을 거부한 상태와 하단 새로고침을 각각 확인합니다. 앱이 종료되지 않고 한국어 오류 안내, 재시도와 위치 설정 버튼이 올바르게 나타나면 전체 과정을 완료했습니다.
+            }
+        }
+    }
+}
