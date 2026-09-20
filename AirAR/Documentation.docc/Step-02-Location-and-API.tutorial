@@ -2,12 +2,12 @@
     @Intro(title: "2단계: 현재 위치로 기상·대기질 데이터 가져오기") {
         Core Location으로 현재 좌표와 지역 이름을 얻고 Open-Meteo의 기상 API와 대기질 API를 동시에 호출합니다. 이 단계에서 추가하는 여덟 파일은 뒤 단계에서 화면과 증강현실이 계속 사용하는 실제 데이터 계층이며, 연습 후 삭제하는 코드는 없습니다.
 
-        @Image(source: "world-coordinate-diagram.svg", alt: "현재 위치가 환경 데이터 요청으로 전달되는 흐름")
+        @Image(source: "chapter1-2-3-1.png", alt: "chapter1-2-3-1")
     }
 
     @Section(title: "API 응답과 앱에서 사용할 데이터 형태 만들기") {
         @ContentAndMedia {
-            서버의 JSON 모양을 그대로 읽는 응답 구조와 앱 내부에서 사용하기 편한 데이터 구조를 분리합니다. 이렇게 하면 API 필드가 바뀌어도 화면과 증강현실 코드를 한꺼번에 수정하지 않아도 됩니다. `Models` 그룹에서 아래 이름의 Swift 파일을 만들고 각 코드 블록 전체를 복사한 뒤 File Inspector의 Target Membership에서 AirAR만 선택합니다.
+            서버의 JSON 모양을 그대로 읽는 응답 구조와 앱 내부에서 사용하기 편한 데이터 구조를 분리합니다. 이렇게 하면 API 필드가 바뀌어도 화면과 증강현실 코드를 한꺼번에 수정하지 않아도 됩니다. `Models` 그룹에서 각 파일명의 Swift 파일을 만들고 각 코드 블록 전체를 입력합니다.
         }
         @Steps {
             @Step {
@@ -67,10 +67,9 @@
         }
         @Steps {
             @Step {
-                Command-B를 눌러 앱을 빌드합니다. `Cannot find type in scope`가 나오면 오류에 표시된 타입의 파일 이름, 코드 전체 복사 여부와 AirAR Target Membership을 확인합니다.
-            }
-            @Step {
-                `Build Succeeded`가 표시되면 2단계를 통과했습니다. 이 단계에서는 URL을 Safari에 직접 입력하거나 별도 화면을 만들 필요가 없습니다. 다음 단계의 ViewModel이 현재 좌표를 서비스에 전달하고 결과를 화면에 연결합니다.
+                Command-B를 눌러 앱을 빌드합니다. `Cannot find type in scope`가 나오면 오류에 표시된 타입의 파일 이름, 코드 전체 복사 여부와 AirAR Target Membership을 확인합니다. `Build Succeeded`가 표시되면 2단계를 통과했습니다. 이 단계에서는 URL을 Safari에 직접 입력하거나 별도 화면을 만들 필요가 없습니다. 다음 단계의 ViewModel이 현재 좌표를 서비스에 전달하고 결과를 화면에 연결합니다.
+                
+                @Image(source: "chapter1-2-3-1.png", alt: "chapter1-2-3-1")
             }
         }
     }
