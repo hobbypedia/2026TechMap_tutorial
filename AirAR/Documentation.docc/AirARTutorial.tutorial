@@ -32,11 +32,4 @@
         @TutorialReference(tutorial: "doc:Step-05-UV-Integration")
     }
 
-    @Chapter(name: "3. 자동 테스트와 아이폰 실행으로 완성 확인하기") {
-        데이터 처리 규칙을 자동 테스트한 뒤 서명, 권한, 네트워크와 증강현실 동작을 실제 기기에서 확인합니다. 모든 항목을 통과하면 학습자의 Xcode 프로젝트와 아이폰에서 직접 실행되는 앱이 완성됩니다.
-
-        @Image(source: "air-ar-hero.svg", alt: "완성된 AirAR 앱")
-
-        @TutorialReference(tutorial: "doc:Step-06-Test-Run")
-    }
 }

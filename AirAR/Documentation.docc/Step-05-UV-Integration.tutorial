@@ -58,17 +58,25 @@
         @Steps {
             @Step {
                 Command-B로 먼저 컴파일합니다. 빌드가 성공하면 실제 기기에서 Command-R로 실행합니다.
-                
-                `Cannot find 'uvBeamSurface'` 또는 기본 라이브러리 오류가 나오면 Metal 파일의 철자, Target Membership과 Compile Sources 포함 여부를 확인합니다. 
+
+                `Cannot find 'uvBeamSurface'` 또는 기본 라이브러리 오류가 나오면 Metal 파일의 철자, Target Membership과 Compile Sources 포함 여부를 확인합니다.
+
+                @Image(source: "chapter2-5-3-1.PNG", alt: "Metal 셰이더를 포함해 실제 아이폰에서 빌드한 화면")
             }
             @Step {
                 위치와 카메라 권한을 허용합니다. 상단에 현재 지역과 온도·미세먼지·자외선이 표시되고, 카메라 추적이 준비된 뒤 먼지가 주변 공간에 나타나는지 확인합니다.
+
+                @Image(source: "chapter2-5-3-2.PNG", alt: "AirAR 앱의 위치 권한 요청 화면")
             }
             @Step {
                 낮에는 기기를 위로 향했을 때 머리 위 월드 공간에 태양 코로나와 빛줄기가 보이는지 확인합니다. 태양을 화면 중앙에 둘수록 렌즈 플레어가 강해져야 합니다. 현지 시각이 일몰 이후이거나 일출 이전이면 태양 전체가 숨겨지는 것이 정상입니다.
+
+                @Image(source: "chapter2-5-3-3.PNG", alt: "아이폰 카메라 화면에 표시된 태양 코로나와 렌즈 플레어")
             }
             @Step {
                 하단 새로고침을 누른 뒤 상단 수치와 미세먼지·태양 표현이 새 응답으로 함께 갱신되면 앱 기능 구현을 완료했습니다.
+
+                @Image(source: "chapter2-5-3-4.PNG", alt: "새로고침 후 환경 수치와 증강현실 표현이 갱신된 화면")
             }
         }
     }

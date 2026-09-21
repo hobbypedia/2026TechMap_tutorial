@@ -42,9 +42,5 @@ verify_copy "AirAR/AR/AirQualityARView.swift" "05-AirQualityARView.swift"
 verify_copy "AirAR/AR/SolarLensFlareView.swift" "05-SolarLensFlareView.swift"
 verify_copy "AirAR/AR/UVBeamShader.metal" "05-UVBeamShader.metal"
 
-verify_copy "AirARTests/Models/AirQualityLevelTests.swift" "06-AirQualityLevelTests.swift"
-verify_copy "AirARTests/Services/OpenMeteoAirQualityServiceTests.swift" "06-OpenMeteoAirQualityServiceTests.swift"
-verify_copy "AirARTests/ViewModels/AirQualityViewModelTests.swift" "06-AirQualityViewModelTests.swift"
-verify_copy "AirARTests/AR/AirQualityVisualizationMapperTests.swift" "06-AirQualityVisualizationMapperTests.swift"
 
 echo "튜토리얼 최종 코드와 실제 프로젝트 소스가 일치합니다."
