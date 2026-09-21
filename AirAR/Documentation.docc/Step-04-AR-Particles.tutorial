@@ -1,0 +1,72 @@
+@Tutorial(time: 45) {
+    @Intro(title: "4단계: 미세먼지를 실제 공간에 띄우기") {
+        ARKit으로 중력과 북쪽이 정렬된 증강현실 공간을 만들고, 미세먼지 농도와 바람을 RealityKit 입자로 표현합니다. 이 단계가 끝나면 아이폰 카메라 화면의 360도 주변에 황토색 먼지가 나타나고 처음 배치된 실제 위치에 남습니다.
+
+        @Image(source: "chapter2-4.png", alt: "chapter2-4")
+    }
+
+    @Section(title: "카메라 추적 상태와 미세먼지 움직임 계산하기") {
+        @ContentAndMedia {
+            `AR` 그룹에 아래 파일을 추가합니다. ARKit은 카메라와 모션 센서로 기기의 위치·방향을 추적하고, RealityKit은 계산된 월드 좌표에 입자를 그립니다. PM2.5가 높을수록 입자가 많아지고, 기상 풍향은 공기가 불어오는 방향이므로 입자 이동에는 반대 방향을 사용합니다.
+        }
+        @Steps {
+            @Step {
+                `ARSessionState.swift`를 만들고 ARKit의 추적 준비·제한·정상 상태를 SwiftUI 안내 문구에 사용할 단순한 값으로 변환합니다.
+
+                @Code(name: "ARSessionState.swift", file: "04-ARSessionState.swift")
+            }
+            @Step {
+                `AirQualityVisualizationMapper.swift`를 만들고 PM2.5 농도를 초당 입자 생성량으로, 풍향·풍속을 RealityKit 좌표계의 이동 벡터로 변환합니다.
+
+                @Code(name: "AirQualityVisualizationMapper.swift", file: "04-AirQualityVisualizationMapper.swift")
+            }
+            @Step {
+                `AirQualityEntityFactory.swift`를 만들고 사용자의 앞쪽뿐 아니라 뒤와 옆에서도 입자가 보이도록 구형 방출 영역을 가진 반투명 황토색 파티클 Entity를 생성합니다.
+
+                @Code(name: "AirQualityEntityFactory.swift", file: "04-AirQualityEntityFactory.swift")
+            }
+        }
+    }
+
+    @Section(title: "증강현실 카메라 화면을 기존 앱에 연결하기") {
+        @ContentAndMedia {
+            RealityKit의 `ARView`는 UIKit View이므로 `UIViewRepresentable`로 감싸 SwiftUI 화면에 넣습니다. 데이터와 카메라 추적 상태가 모두 준비됐을 때만 현재 카메라 위치를 기준으로 월드 앵커를 한 번 만들고, 같은 데이터로 중복 배치되지 않도록 식별자를 기억합니다.
+        }
+        @Steps {
+            @Step {
+                `AirQualityARView.swift`를 `AR` 그룹에 만들고 카메라 세션 시작, 코칭 오버레이, 추적 상태 전달, 월드 앵커와 파티클 배치를 담당하는 전체 코드를 추가합니다.
+
+                @Code(name: "AirQualityARView.swift", file: "04-AirQualityARView.swift")
+            }
+            @Step {
+                기존 `ContentView.swift` 전체를 아래 코드로 교체합니다. 3단계의 상태 패널과 오류·새로고침 기능은 유지하고, 배경만 증강현실 카메라 화면으로 바뀝니다.
+
+                @Code(name: "ContentView.swift", file: "04-ContentView.swift", previousFile: "03-ContentView.swift")
+            }
+        }
+    }
+
+    @Section(title: "미세먼지가 실제 공간에 고정되는지 확인하기") {
+        @ContentAndMedia {
+            시뮬레이터에서는 이 단계의 컴파일만 확인할 수 있고 카메라 추적이나 입자 배치는 검증할 수 없습니다. 밝고 바닥·벽의 무늬가 충분한 실제 공간에서 아이폰을 천천히 움직이면 ARKit이 특징점을 찾아 월드 좌표를 안정화합니다.
+        }
+        @Steps {
+            @Step {
+                Xcode 실행 대상을 실제 기기로 선택한 후 Command-R을 눌러 앱을 실행시키고, 카메라 권한을 허용합니다.
+                
+                @Image(source: "chapter2-4-3-1.png", alt: "chapter2-4-3-1")
+            }
+            @Step {
+                화면의 코칭 안내가 사라지고 추적 준비 문구가 없어질 때까지 바닥과 벽을 천천히 비춥니다.
+                @Image(source: "chapter2-4-3-2.png", alt: "chapter2-4-3-2")
+            }
+            @Step {
+                환경 데이터가 로드되면 황토색 입자가 사용자 주변에 나타나는지 확인합니다. 제자리에서 천천히 360도 회전하거나 몇 걸음 이동해도 입자 영역이 화면에 붙어 따라오지 않고 처음 배치된 실제 공간에 남아 있어야 합니다. 
+                
+                입자가 보이지 않으면 상단 환경 수치가 먼저 표시됐는지, 위치·카메라 권한이 허용됐는지와 AR 추적 안내가 사라졌는지 확인합니다. 빌드 오류가 있다면 새 Swift 파일 네 개의 AirAR Target Membership을 확인합니다.
+                
+                @Image(source: "chapter2-4-3-3.png", alt: "chapter2-4-3-3")
+            }
+        }
+    }
+}

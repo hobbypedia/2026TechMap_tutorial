@@ -1,0 +1,83 @@
+@Tutorial(time: 50) {
+    @Intro(title: "5단계: 자외선 태양 효과를 더해 앱 완성하기") {
+        Metal 셰이더로 그린 태양과 빛, RealityKit 월드 평면과 화면 위 렌즈 플레어를 추가합니다. 현지 일출·일몰과 자외선 수치에 맞춰 효과를 바꾸며, 이 단계가 끝나면 저장소의 완성 앱과 같은 기능이 실제 기기에서 실행됩니다.
+
+        @Image(source: "uv-visualization.svg", alt: "셰이더 기반 태양과 햇빛 빔")
+    }
+
+    @Section(title: "자외선 수치와 태양 모양을 계산하기") {
+        @ContentAndMedia {
+            4단계에서 만든 환경 값 변환 파일에 자외선 계산을 추가하고, 카메라 위치를 읽는 Swift 확장과 GPU에서 태양을 그리는 Metal 파일을 추가합니다. 교체하라고 표시된 파일은 같은 이름으로 새로 만들지 말고 기존 내용을 전체 선택해 덮어씁니다.
+        }
+        @Steps {
+            @Step {
+                기존 `AirQualityVisualizationMapper.swift` 전체를 아래 코드로 교체합니다. UV Index를 0부터 1 사이의 세기로 정규화하고, 카메라가 태양을 얼마나 정면으로 보는지 내적으로 계산하며, 현재 시각이 일출과 일몰 사이인지 판정합니다.
+
+                @Code(name: "AirQualityVisualizationMapper.swift", file: "05-AirQualityVisualizationMapper.swift", previousFile: "04-AirQualityVisualizationMapper.swift")
+            }
+            @Step {
+                `simd_float4x4+Translation.swift`를 `AR` 그룹에 추가합니다. ARKit이 제공하는 4×4 카메라 변환 행렬에서 월드 공간의 x·y·z 위치만 간단히 읽을 수 있게 합니다.
+
+                @Code(name: "simd_float4x4+Translation.swift", file: "05-simd_float4x4+Translation.swift")
+            }
+            @Step {
+                New File from Template... > Metal File로 `UVBeamShader.metal`을 만들고 전체 코드를 복사합니다. 이 셰이더는 별도 이미지 없이 원형 태양, 코로나와 방사형 빛줄기를 그립니다. AirAR Target Membership과 Build Phases > Compile Sources 포함 여부를 확인합니다.
+
+                @Code(name: "UVBeamShader.metal", file: "05-UVBeamShader.metal")
+            }
+        }
+    }
+
+    @Section(title: "머리 위 태양과 화면 렌즈 플레어 연결하기") {
+        @ContentAndMedia {
+            태양은 최초 사용자 위치의 머리 위 월드 평면에 배치하므로 기기 화면에 붙어 움직이지 않습니다. 기기가 태양을 정면으로 볼수록 화면 공간의 코로나와 렌즈 고스트가 강해지고, Open-Meteo가 돌려준 현지 일출부터 일몰 사이에만 태양 그룹 전체가 보입니다.
+        }
+        @Steps {
+            @Step {
+                `SolarLensFlareView.swift`를 추가합니다. 카메라가 태양을 향하는 정도를 받아 Core Animation의 원형 방사광과 여러 렌즈 고스트의 위치·투명도를 갱신합니다.
+
+                @Code(name: "SolarLensFlareView.swift", file: "05-SolarLensFlareView.swift")
+            }
+            @Step {
+                기존 `AirQualityEntityFactory.swift` 전체를 교체합니다. 4단계 파티클 생성 기능은 유지하면서 Metal 재질을 사용하는 태양 평면과 빛줄기 Entity를 함께 생성합니다.
+
+                @Code(name: "AirQualityEntityFactory.swift", file: "05-AirQualityEntityFactory.swift", previousFile: "04-AirQualityEntityFactory.swift")
+            }
+            @Step {
+                기존 `AirQualityARView.swift` 전체를 최종 버전으로 교체합니다. 매 프레임 카메라 방향을 읽어 태양이 화면 안에 있는지 계산하고 낮·밤 표시, 자외선 세기와 렌즈 플레어를 갱신합니다.
+
+                @Code(name: "AirQualityARView.swift", file: "05-AirQualityARView.swift", previousFile: "04-AirQualityARView.swift")
+            }
+        }
+    }
+
+    @Section(title: "완성 앱이 아이폰에서 동작하는지 확인하기") {
+        @ContentAndMedia {
+            Metal 파일은 Swift 파일과 별도로 GPU용 라이브러리로 컴파일됩니다. Xcode가 Metal Toolchain 누락을 알리면 Xcode > Settings > Components에서 Metal Toolchain을 설치하고 Xcode를 다시 연 뒤 빌드합니다.
+        }
+        @Steps {
+            @Step {
+                Command-B로 먼저 컴파일합니다. 빌드가 성공하면 실제 기기에서 Command-R로 실행합니다.
+
+                `Cannot find 'uvBeamSurface'` 또는 기본 라이브러리 오류가 나오면 Metal 파일의 철자, Target Membership과 Compile Sources 포함 여부를 확인합니다.
+
+                @Image(source: "chapter2-5-3-1.PNG", alt: "Metal 셰이더를 포함해 실제 아이폰에서 빌드한 화면")
+            }
+            @Step {
+                위치와 카메라 권한을 허용합니다. 상단에 현재 지역과 온도·미세먼지·자외선이 표시되고, 카메라 추적이 준비된 뒤 먼지가 주변 공간에 나타나는지 확인합니다.
+
+                @Image(source: "chapter2-5-3-2.PNG", alt: "AirAR 앱의 위치 권한 요청 화면")
+            }
+            @Step {
+                낮에는 기기를 위로 향했을 때 머리 위 월드 공간에 태양 코로나와 빛줄기가 보이는지 확인합니다. 태양을 화면 중앙에 둘수록 렌즈 플레어가 강해져야 합니다. 현지 시각이 일몰 이후이거나 일출 이전이면 태양 전체가 숨겨지는 것이 정상입니다.
+
+                @Image(source: "chapter2-5-3-3.PNG", alt: "아이폰 카메라 화면에 표시된 태양 코로나와 렌즈 플레어")
+            }
+            @Step {
+                하단 새로고침을 누른 뒤 상단 수치와 미세먼지·태양 표현이 새 응답으로 함께 갱신되면 앱 기능 구현을 완료했습니다.
+
+                @Image(source: "chapter2-5-3-4.PNG", alt: "새로고침 후 환경 수치와 증강현실 표현이 갱신된 화면")
+            }
+        }
+    }
+}

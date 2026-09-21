@@ -30,6 +30,12 @@ jobs:
       - name: Generate original assets
         run: python3 Scripts/generate_assets.py
 
+      - name: Verify tutorial source copies
+        run: bash Scripts/verify_tutorial_sources.sh
+
+      - name: Verify runnable tutorial checkpoints
+        run: bash Scripts/verify_tutorial_checkpoints.sh
+
       - name: Build DocC archive
         run: |
           xcodebuild docbuild \
@@ -52,6 +58,7 @@ jobs:
           xcrun docc process-archive transform-for-static-hosting "$ARCHIVE_PATH" \
             --output-path "$RUNNER_TEMP/site" \
             --hosting-base-path "$REPOSITORY_NAME"
+          cp Scripts/docc-root-redirect.html "$RUNNER_TEMP/site/index.html"
           touch "$RUNNER_TEMP/site/.nojekyll"
 
       - name: Upload Pages artifact

@@ -102,6 +102,18 @@ xcodebuild -project AirAR.xcodeproj \
 
 시뮬레이터 이름은 `xcrun simctl list devices available` 결과에 맞게 바꿉니다. 단위 테스트는 실제 네트워크를 호출하지 않습니다.
 
+## 튜토리얼 진행 방식
+
+DocC 과정은 5단계, 총 3시간입니다. 코드 블록은 일부 발췌가 아니라 Xcode 파일에 그대로 복사할 수 있는 완전한 소스입니다.
+
+1. 아이폰에서 실행되는 빈 앱과 권한 준비 — 15분
+2. 현재 위치로 기상·대기질 데이터 가져오기 — 40분
+3. 받은 환경 데이터를 앱 화면에 표시하기 — 30분
+4. 미세먼지를 실제 공간에 띄우기 — 45분
+5. 자외선 태양 효과를 더해 앱 완성하기 — 50분
+
+1단계에서는 기본 앱, 3단계에서는 실제 위치의 환경 데이터 화면, 4단계에서는 미세먼지 AR, 5단계에서는 UV 태양을 포함한 완성 앱이 실행됩니다.
+
 ## 에셋 재생성
 
 ```bash
@@ -112,7 +124,7 @@ python3 Scripts/generate_assets.py
 
 ## DocC 빌드
 
-DocC 학습 과정은 하나의 긴 문서가 아니라 10개의 독립 튜토리얼로 구성됩니다. 프로젝트 생성부터 SwiftUI 기초, 위치, REST API, ViewModel, ARKit, 파티클, UV 태양, 화면 통합, 테스트 순서로 진행하며 각 단계의 완료 체크포인트를 통과한 뒤 다음 단계로 이동합니다.
+DocC 학습 과정은 프로젝트 준비, 위치와 API, 데이터 UI, AR 파티클, UV 태양의 5개 튜토리얼로 구성됩니다. 각 단계의 빌드 또는 실행 체크포인트를 통과한 뒤 다음 단계로 이동합니다.
 
 ```bash
 xcodebuild docbuild \
@@ -125,9 +137,11 @@ xcodebuild docbuild \
 
 Xcode의 Product → Build Documentation으로도 튜토리얼을 열 수 있습니다.
 
+`bash Scripts/verify_tutorial_sources.sh`는 튜토리얼의 최종 코드 파일이 실제 앱·테스트 소스와 같은지 확인합니다. `bash Scripts/verify_tutorial_checkpoints.sh`는 3단계 데이터 UI와 4단계 AR 파티클 앱이 각각 컴파일되는지 검사합니다.
+
 ## GitHub Pages
 
-`dev`에 Push하거나 Actions에서 `Deploy DocC to GitHub Pages`를 수동 실행하면 DocC 아카이브를 정적 호스팅 형식으로 변환해 배포합니다.
+`dev`에 Push하거나 Actions에서 `Deploy DocC to GitHub Pages`를 수동 실행하면 DocC 아카이브를 정적 호스팅 형식으로 변환해 배포합니다. 배포 루트는 5단계 튜토리얼 목차로 자동 이동합니다.
 
 1. GitHub 저장소의 Settings → Pages로 이동합니다.
 2. Source를 **GitHub Actions**로 설정합니다.

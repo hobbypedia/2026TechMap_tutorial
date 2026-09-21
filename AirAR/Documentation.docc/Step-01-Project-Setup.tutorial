@@ -1,0 +1,53 @@
+@Tutorial(time: 5) {
+    @Intro(title: "1단계: 아이폰에서 실행되는 빈 앱과 권한 준비하기") {
+        SwiftUI 기반 iOS 프로젝트를 만들고 위치·카메라 권한, 앱 서명과 실제 기기 실행 환경을 설정합니다. 이 단계가 끝나면 자신의 Bundle Identifier로 서명된 기본 앱이 아이폰에서 실행됩니다.
+
+        @Image(source: "chapter1-1-1-1.png", alt: "프로젝트 초기 설정")
+    }
+
+    @Section(title: "새 iOS 앱 프로젝트 만들기") {
+        @ContentAndMedia {
+            macOS와 Xcode 16 이상, iOS 18 이상을 실행하는 ARKit 지원 iPhone 또는 iPad가 필요합니다. 이후 코드 블록은 설명용 일부 코드가 아니라 파일 전체이므로 중간 줄을 생략하지 않아야 합니다.
+        }
+        @Steps {
+            @Step {
+                Xcode에서 File > New > Project > iOS App을 선택합니다.
+                
+                @Image(source: "chapter1-1-1-1.png", alt: "chapter1-1-1-1")
+            }
+            @Step {
+                Product Name은 `AirAR`, Interface는 SwiftUI, Language는 Swift, Storage는 None으로 지정합니다.
+                
+                @Image(source: "chapter1-1-1-2.png", alt: "chapter1-1-1-2")
+            }
+            @Step {
+                프로젝트 탐색기에서 파란색 AirAR 프로젝트를 선택하고 AirAR Target을 엽니다. General의 Minimum Deployments를 iOS 18.0으로 맞춥니다. 
+                
+                @Image(source: "chapter1-1-1-3.png", alt: "chapter1-1-1-3")
+            }
+            @Step {
+                프로젝트 탐색기의 AirAR 폴더를 우클릭해 `AR`, `Models`, `Services`, `ViewModels`, `Views` 폴더를 만듭니다. 이 폴더는 이후 파일을 역할별로 찾기 쉽게 정리하기 위한 것으로, 만들지 않아도 앱 동작에는 차이가 없습니다.
+                
+                @Image(source: "chapter1-1-1-4.png", alt: "chapter1-1-1-4")
+            }
+        }
+    }
+
+    @Section(title: "위치·카메라 권한과 아이폰 실행 설정하기") {
+        @ContentAndMedia {
+            위치는 현재 지역의 API 요청 좌표를 만드는 데 사용하고, 카메라는 증강현실 월드 추적에 사용합니다. iOS는 사용 이유가 Info에 등록되지 않은 상태에서 보호 기능에 접근하면 앱을 종료하므로 두 설명을 반드시 추가해야 합니다.
+        }
+        @Steps {
+            @Step {
+                AirAR Target > Info > Custom iOS Target Properties에서 `Privacy - Location When In Use Usage Description`과 `Privacy - Camera Usage Description`을 추가하고 Value를 입력합니다. 키가 이미 있으면 중복 추가하지 않고, 기존 값만 수정합니다.
+                
+                @Image(source: "chapter1-1-2-1.png", alt: "chapter1-1-2-1")
+            }
+            @Step {
+                케이블 또는 같은 Wi-Fi로 iPhone을 Mac에 연결한 후, Xcode 상단 실행 대상을 연결한 iPhone으로 선택하고, 프로젝트를 빌드합니다. 기본 SwiftUI 화면이 기기에 나타나면 1단계 체크포인트를 통과했습니다.
+                
+                @Image(source: "chapter1-1-2-2.png", alt: "chapter1-1-2-2")
+            }
+        }
+    }
+}
