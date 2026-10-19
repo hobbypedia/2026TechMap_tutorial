@@ -2,7 +2,7 @@
     @Intro(title: "5단계: 자외선 태양 효과를 더해 앱 완성하기") {
         Metal 셰이더로 그린 태양과 빛, RealityKit 월드 평면과 화면 위 렌즈 플레어를 추가합니다. 현지 일출·일몰과 자외선 수치에 맞춰 효과를 바꾸며, 이 단계가 끝나면 저장소의 완성 앱과 같은 기능이 실제 기기에서 실행됩니다.
 
-        @Image(source: "uv-visualization.svg", alt: "셰이더 기반 태양과 햇빛 빔")
+        @Image(source: "chapter2-5.png", alt: "셰이더 기반 태양과 햇빛 빔")
     }
 
     @Section(title: "자외선 수치와 태양 모양을 계산하기") {
