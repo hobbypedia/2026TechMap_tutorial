@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// Displays one formatted metric and combines its content into a single accessibility element.
+/// 형식이 지정된 환경 수치 하나를 표시하고 내용을 하나의 접근성 요소로 묶습니다.
 struct MetricView: View {
     let viewModel: AirQualityMetricViewModel
 

@@ -1,6 +1,7 @@
 import ARKit
 import Foundation
 
+/// Converts AR session and camera tracking states into values SwiftUI can display.
 /// AR 세션과 카메라 추적 상태를 SwiftUI가 이해할 수 있는 값으로 변환합니다.
 enum ARSessionState: Equatable, Sendable {
     case initializing

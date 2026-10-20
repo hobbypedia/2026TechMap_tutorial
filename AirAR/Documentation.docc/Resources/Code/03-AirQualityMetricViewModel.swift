@@ -1,5 +1,6 @@
 import Foundation
 
+/// A presentation model for one metric in the top status panel.
 /// 상단 상태 패널의 단일 항목을 표현하는 화면 전용 모델입니다.
 struct AirQualityMetricViewModel: Identifiable, Equatable {
     enum Kind: String {

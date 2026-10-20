@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// A compact panel displaying the view model's three current metrics in one row.
 /// ViewModel이 만든 세 가지 현재 상태를 한 줄로 보여 주는 컴팩트 패널입니다.
 struct AirQualityStatusPanel: View {
     let locationName: String

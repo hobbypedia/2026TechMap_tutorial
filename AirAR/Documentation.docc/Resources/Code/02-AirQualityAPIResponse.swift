@@ -1,5 +1,6 @@
 import Foundation
 
+/// A data transfer object for Open-Meteo responses.
 /// Open-Meteo 응답 전용 DTO입니다.
 struct AirQualityAPIResponse: Decodable, Sendable {
     struct Current: Decodable, Sendable {
@@ -7,6 +8,8 @@ struct AirQualityAPIResponse: Decodable, Sendable {
         let pm25: Double
         let uvIndex: Double
 
+        // Map API JSON field names to Swift property names during decoding.
+        // 디코딩할 때 API JSON 필드 이름을 Swift 속성 이름에 연결합니다.
         enum CodingKeys: String, CodingKey {
             case time
             case pm25 = "pm2_5"
@@ -17,6 +20,7 @@ struct AirQualityAPIResponse: Decodable, Sendable {
     let current: Current
 }
 
+/// A response DTO for current temperature and wind at 10 m from the Open-Meteo Forecast API.
 /// Open-Meteo Forecast API의 현재 기온과 지상 10m 바람 응답 DTO입니다.
 struct WeatherForecastAPIResponse: Decodable, Sendable {
     struct Current: Decodable, Sendable {

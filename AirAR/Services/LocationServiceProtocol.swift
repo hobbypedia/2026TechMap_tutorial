@@ -1,5 +1,6 @@
 import Foundation
 
+/// A service contract abstracting location authorization and coordinate lookup.
 /// 현재 위치 권한 요청과 좌표 획득을 추상화한 서비스 계약입니다.
 @MainActor
 protocol LocationServiceProtocol: AnyObject {
@@ -7,6 +8,7 @@ protocol LocationServiceProtocol: AnyObject {
     func cancel()
 }
 
+/// Errors encountered while obtaining location authorization or current coordinates.
 /// 위치 권한 또는 현재 좌표를 얻는 과정에서 발생하는 오류입니다.
 enum LocationServiceError: Error, Equatable, LocalizedError {
     case servicesDisabled

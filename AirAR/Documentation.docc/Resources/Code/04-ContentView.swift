@@ -1,6 +1,10 @@
 import SwiftUI
 
+/// Combines the AR camera view with environmental readings and refresh controls.
+/// AR 카메라 화면에 환경 수치와 새로고침 컨트롤을 결합합니다.
 struct ContentView: View {
+    // Keep the view model alive across SwiftUI body evaluations.
+    // SwiftUI의 body가 다시 평가되어도 뷰 모델 인스턴스를 유지합니다.
     @StateObject private var viewModel: AirQualityViewModel
     @StateObject private var arController = ARExperienceController()
     @State private var sessionState: ARSessionState = .initializing
@@ -67,6 +71,8 @@ struct ContentView: View {
         }
     }
 
+    /// Places the available data only when the AR session is ready for placement.
+    /// AR 세션이 배치 가능한 상태일 때만 준비된 데이터를 공간에 배치합니다.
     private func placeSnapshot() {
         guard let snapshot = viewModel.snapshot, sessionState.isReadyForPlacement else { return }
         arController.place(snapshot)
