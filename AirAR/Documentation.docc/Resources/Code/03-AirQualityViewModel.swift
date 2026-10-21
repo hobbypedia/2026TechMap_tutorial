@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 
+/// Manages location lookup, environmental data requests, and screen state.
 /// 현재 위치 확인, 환경 데이터 요청과 화면 상태를 관리합니다.
 @MainActor
 final class AirQualityViewModel: ObservableObject {
@@ -21,6 +22,7 @@ final class AirQualityViewModel: ObservableObject {
         self.locationService = locationService ?? CoreLocationService()
     }
 
+    /// Metrics the view can display directly without additional formatting or level classification.
     /// View가 별도 포맷팅이나 상태 판정 없이 바로 표시할 수 있는 항목입니다.
     var metrics: [AirQualityMetricViewModel] {
         guard let snapshot else {
@@ -79,22 +81,26 @@ final class AirQualityViewModel: ObservableObject {
         return isLoading ? "현재 위치 확인 중" : "현재 위치"
     }
 
+    /// Loads the initial data, avoiding duplicate requests while a load is in progress.
     /// 최초 데이터를 불러옵니다. 이미 요청 중이면 중복 요청을 만들지 않습니다.
     func load() {
         guard loadTask == nil else { return }
         startLoad(cancellingCurrent: false)
     }
 
+    /// Cancels the current request and fetches fresh data.
     /// 진행 중인 요청을 취소하고 최신 데이터를 다시 요청합니다.
     func refresh() {
         startLoad(cancellingCurrent: true)
     }
 
+    /// Retries a failed request.
     /// 실패한 요청을 다시 시도합니다.
     func retry() {
         startLoad(cancellingCurrent: true)
     }
 
+    /// Cleans up pending network work when the screen disappears.
     /// 화면이 사라질 때 진행 중인 네트워크 작업을 정리합니다.
     func cancel() {
         loadTask?.cancel()
@@ -102,6 +108,8 @@ final class AirQualityViewModel: ObservableObject {
         loadTask = nil
     }
 
+    /// Starts a location-to-data request and publishes only results from the latest request generation.
+    /// 위치 확인부터 데이터 조회까지 요청을 시작하고 가장 최근 요청 세대의 결과만 반영합니다.
     private func startLoad(cancellingCurrent: Bool) {
         if cancellingCurrent {
             loadTask?.cancel()
@@ -110,6 +118,8 @@ final class AirQualityViewModel: ObservableObject {
             return
         }
 
+        // Give each request a generation so an older response cannot overwrite a newer one.
+        // 이전 응답이 새 응답을 덮어쓰지 못하도록 요청마다 세대 번호를 부여합니다.
         requestGeneration += 1
         let generation = requestGeneration
         loadState = .loading
@@ -121,6 +131,8 @@ final class AirQualityViewModel: ObservableObject {
                     latitude: location.latitude,
                     longitude: location.longitude
                 )
+                // Combine the location service display name with environmental readings from the API.
+                // 위치 서비스의 표시용 지역 이름과 API의 환경 수치를 결합합니다.
                 let snapshot = AirQualitySnapshot(
                     locationName: location.displayName,
                     measuredAt: response.measuredAt,
@@ -136,8 +148,10 @@ final class AirQualityViewModel: ObservableObject {
                 self?.snapshot = snapshot
                 self?.loadState = .loaded
             } catch let error as AirQualityServiceError where error == .cancelled {
+                // Does not surface requests cancelled by refresh or screen dismissal as errors.
                 // 새로고침이나 화면 종료로 취소된 요청은 오류로 노출하지 않습니다.
             } catch is CancellationError {
+                // Does not present cancellation as a failure to the user.
                 // 취소는 사용자에게 실패 상태로 표시하지 않습니다.
             } catch {
                 guard !Task.isCancelled, self?.requestGeneration == generation else { return }

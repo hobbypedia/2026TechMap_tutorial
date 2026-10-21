@@ -23,12 +23,15 @@ final class ARExperienceController: ObservableObject {
     }
 }
 
+/// Step 4 checkpoint: places PM2.5 particles in world space once tracking is ready.
 /// 4단계 체크포인트: 추적이 준비되면 PM2.5 파티클을 월드 공간에 배치합니다.
 struct AirQualityARView: UIViewRepresentable {
     @ObservedObject var controller: ARExperienceController
     @Binding var sessionState: ARSessionState
     let animationsEnabled: Bool
 
+    /// Keeps AR session callbacks and scene state in a coordinator across SwiftUI view updates.
+    /// SwiftUI 뷰 갱신 사이에도 AR 세션 콜백과 장면 상태를 코디네이터에서 유지합니다.
     func makeCoordinator() -> Coordinator {
         Coordinator(controller: controller, animationsEnabled: animationsEnabled) { state in
             sessionState = state
@@ -45,6 +48,8 @@ struct AirQualityARView: UIViewRepresentable {
         }
 
         let configuration = ARWorldTrackingConfiguration()
+        // Align the world with gravity and compass heading so wind directions use a consistent frame.
+        // 풍향에 일관된 기준을 사용하도록 월드를 중력과 나침반 방위에 맞춥니다.
         configuration.worldAlignment = .gravityAndHeading
         arView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
 
@@ -68,11 +73,15 @@ struct AirQualityARView: UIViewRepresentable {
         context.coordinator.stateDidChange = { state in sessionState = state }
     }
 
+    /// Releases scene subscriptions and pauses tracking when SwiftUI removes the view.
+    /// SwiftUI가 뷰를 제거하면 장면 구독을 해제하고 추적을 일시 정지합니다.
     static func dismantleUIView(_ uiView: ARView, coordinator: Coordinator) {
         coordinator.disconnect()
         uiView.session.pause()
     }
 
+    /// Owns the bridge between SwiftUI commands, AR session events, and RealityKit entities.
+    /// SwiftUI 명령, AR 세션 이벤트, RealityKit 엔티티 사이의 연결을 관리합니다.
     final class Coordinator: NSObject, ARSessionDelegate {
         private weak var arView: ARView?
         private let controller: ARExperienceController
@@ -99,6 +108,8 @@ struct AirQualityARView: UIViewRepresentable {
         func connect(to arView: ARView) {
             self.arView = arView
             arView.session.delegate = self
+            // Capture the coordinator weakly so stored callbacks do not keep it alive after dismissal.
+            // 저장된 콜백이 화면 종료 후에도 코디네이터를 유지하지 않도록 약하게 참조합니다.
             controller.placeHandler = { [weak self] snapshot in self?.place(snapshot) }
             controller.updateHandler = { [weak self] snapshot in self?.update(snapshot) }
             sceneUpdateSubscription = arView.scene.subscribe(
@@ -165,6 +176,8 @@ struct AirQualityARView: UIViewRepresentable {
 
         @MainActor
         private func updateParticleSimulationIfNeeded() {
+            // Update particle components only when the requested play/pause state changes.
+            // 요청된 재생·일시 정지 상태가 바뀔 때만 파티클 컴포넌트를 갱신합니다.
             guard appliedAnimationsEnabled != animationsEnabled else { return }
             for entity in particleEmitters {
                 guard var component = entity.components[
@@ -177,6 +190,8 @@ struct AirQualityARView: UIViewRepresentable {
         }
 
         func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
+            // Translate tracking events into screen state and deliver the change on the main queue.
+            // 추적 이벤트를 화면 상태로 변환하고 메인 큐에서 변경 사항을 전달합니다.
             let state = ARSessionState.map(camera.trackingState)
             DispatchQueue.main.async { [weak self] in self?.stateDidChange(state) }
         }

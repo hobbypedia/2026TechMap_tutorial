@@ -1,7 +1,10 @@
 import SwiftUI
 
+/// Step 3 checkpoint: completes the location and environmental data screen before adding AR.
 /// 3단계 체크포인트: AR을 붙이기 전에 위치와 환경 데이터 화면을 먼저 완성합니다.
 struct ContentView: View {
+    // Keep the view model alive across SwiftUI body evaluations.
+    // SwiftUI의 body가 다시 평가되어도 뷰 모델 인스턴스를 유지합니다.
     @StateObject private var viewModel: AirQualityViewModel
     @Environment(\.openURL) private var openURL
 

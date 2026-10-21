@@ -3,6 +3,7 @@
 
 using namespace metal;
 
+/// Creates warm sunlight beams and opacity variations from UV coordinates without images.
 /// 이미지 없이 UV 좌표만으로 따뜻한 햇빛 빔과 투명도 변화를 만듭니다.
 [[visible]]
 void uvBeamSurface(realitykit::surface_parameters params) {
@@ -10,6 +11,8 @@ void uvBeamSurface(realitykit::surface_parameters params) {
     float strength = saturate(params.uniforms().custom_parameter()[0]);
     float baseOpacity = saturate(params.uniforms().custom_parameter()[1]);
 
+    // Widen the beam away from its source and soften its horizontal edges.
+    // 광원에서 멀어질수록 빔을 넓히고 좌우 가장자리를 부드럽게 만듭니다.
     float distanceFromSource = 1.0 - uv.y;
     float halfWidth = mix(0.028, 0.50, distanceFromSource);
     float horizontalDistance = abs(uv.x - 0.5);
@@ -34,9 +37,12 @@ void uvBeamSurface(realitykit::surface_parameters params) {
     params.surface().set_opacity(opacity);
 }
 
+/// Procedurally creates a white core, golden corona, and pointed rays of varying lengths.
 /// 흰 중심광, 금빛 코로나와 길이가 서로 다른 뾰족한 광선을 절차적으로 만듭니다.
 [[visible]]
 void sunCoronaSurface(realitykit::surface_parameters params) {
+    // Convert UV coordinates to a center-relative space for radial and angular calculations.
+    // 반경과 각도를 계산하기 위해 UV 좌표를 중심 기준 좌표로 변환합니다.
     float2 centeredUV = (params.geometry().uv0() - 0.5) * 2.0;
     float radius = length(centeredUV);
     float strength = saturate(params.uniforms().custom_parameter()[0]);
@@ -48,6 +54,7 @@ void sunCoronaSurface(realitykit::surface_parameters params) {
     float innerGlow = (1.0 - smoothstep(0.06, 0.50, radius)) * 0.92;
     float outerGlow = (1.0 - smoothstep(0.28, 0.96, radius)) * 0.42;
 
+    // Combines sharp peaks at several frequencies to emphasize the sun's corona over a round silhouette.
     // 좁고 긴 여러 주기의 피크를 합쳐 둥근 구보다 강한 태양 코로나가 먼저 보이게 합니다.
     float major = pow(saturate(0.5 + 0.5 * cos(angle * 8.0 + time * 0.045)), 42.0);
     float medium = pow(saturate(0.5 + 0.5 * sin(angle * 17.0 - time * 0.065)), 28.0);

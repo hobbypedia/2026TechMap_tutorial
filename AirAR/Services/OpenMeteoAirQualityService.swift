@@ -1,5 +1,6 @@
 import Foundation
 
+/// Fetches environmental data for the given coordinates from Open-Meteo's free Weather and Air Quality REST APIs.
 /// Open-Meteo의 무료 Weather/Air Quality REST API에서 지정 좌표의 환경 데이터를 가져옵니다.
 final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Sendable {
     private let session: URLSession
@@ -10,12 +11,17 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         self.decoder = decoder
     }
 
+    /// Requests current temperature, surface wind, PM2.5, and UV Index concurrently for the given coordinates.
     /// 지정한 좌표의 현재 기온, 지상 바람, PM2.5와 UV Index를 병렬로 요청합니다.
     /// - Parameters:
-    ///   - latitude: 조회할 위도입니다.
-    ///   - longitude: 조회할 경도입니다.
-    /// - Returns: 좌표와 측정 시각을 포함한 스냅샷입니다. 지역 이름은 위치 서비스 계층에서 보완합니다.
-    /// - Throws: URL, HTTP, 응답, 디코딩, 네트워크 및 취소 오류를 구분해 던집니다.
+    ///   - latitude: The latitude to query.
+    ///     조회할 위도입니다.
+    ///   - longitude: The longitude to query.
+    ///     조회할 경도입니다.
+    /// - Returns: A snapshot containing environmental readings and their timestamp; the location service supplies the location name.
+    ///   환경 수치와 측정 시각을 포함한 스냅샷입니다. 지역 이름은 위치 서비스 계층에서 보완합니다.
+    /// - Throws: Throws distinct errors for URL construction, HTTP status, response validation, decoding, networking, and cancellation.
+    ///   URL, HTTP, 응답, 디코딩, 네트워크 및 취소 오류를 구분해 던집니다.
     func fetchCurrentAirQuality(
         latitude: Double,
         longitude: Double
@@ -43,6 +49,8 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
                 ]
             )
 
+            // Start both independent requests before awaiting them, then merge their results.
+            // 서로 독립적인 두 요청을 먼저 시작한 뒤 함께 기다리고 결과를 합칩니다.
             async let airResponse: AirQualityAPIResponse = fetch(AirQualityAPIResponse.self, from: airURL)
             async let weatherResponse: WeatherForecastAPIResponse = fetch(WeatherForecastAPIResponse.self, from: weatherURL)
             let (air, weather) = try await (airResponse, weatherResponse)
@@ -70,6 +78,7 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         }
     }
 
+    /// Converts local ISO 8601 strings returned with timezone=auto into absolute dates.
     /// timezone=auto로 받은 현지 ISO 8601 문자열을 절대 시각으로 변환합니다.
     private func makeSunTimes(from response: WeatherForecastAPIResponse) throws -> (Date, Date) {
         guard let sunriseText = response.daily.sunrise.first,
@@ -81,6 +90,8 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
+        // Interpret local sunrise and sunset in the response time zone, not the device time zone.
+        // 현지 일출·일몰을 기기 시간대가 아닌 응답에 포함된 시간대로 해석합니다.
         formatter.timeZone = TimeZone(identifier: response.timezone)
             ?? TimeZone(secondsFromGMT: response.utcOffsetSeconds)
 
@@ -92,6 +103,8 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         return (sunrise, sunset)
     }
 
+    /// Builds an encoded request URL from a base endpoint and query items.
+    /// 기본 엔드포인트와 쿼리 항목으로 인코딩된 요청 URL을 구성합니다.
     private func makeURL(base: String, queryItems: [URLQueryItem]) throws -> URL {
         guard var components = URLComponents(string: base) else {
             throw AirQualityServiceError.invalidURL
@@ -103,6 +116,8 @@ final class OpenMeteoAirQualityService: AirQualityServiceProtocol, @unchecked Se
         return url
     }
 
+    /// Checks the HTTP response before decoding JSON into the requested response type.
+    /// JSON을 요청한 응답 타입으로 디코딩하기 전에 HTTP 응답을 검사합니다.
     private func fetch<Response: Decodable>(
         _ type: Response.Type,
         from url: URL

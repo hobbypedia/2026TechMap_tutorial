@@ -1,6 +1,7 @@
 import RealityKit
 import UIKit
 
+/// Step 4 checkpoint: creates PM2.5 particles around the user.
 /// 4단계 체크포인트: 사용자 주변에 PM2.5 파티클을 만듭니다.
 final class AirQualityEntityFactory {
     func makeVisualization(from snapshot: AirQualitySnapshot) -> Entity {
@@ -27,6 +28,8 @@ final class AirQualityEntityFactory {
         let speed = AirQualityVisualizationMapper.visualWindSpeed(
             forMetersPerSecond: snapshot.windSpeed
         )
+        // Configure the emission volume, movement, and particle appearance before attaching the component.
+        // 컴포넌트를 연결하기 전에 방출 영역, 움직임, 파티클 모양을 설정합니다.
         var component = ParticleEmitterComponent()
         component.emitterShape = .sphere
         component.emitterShapeSize = [radius * 2, 1.6, radius * 2]

@@ -1,4 +1,8 @@
+<!-- Explain location access in the system permission prompt. -->
+<!-- 시스템 권한 창에서 위치 접근 목적을 설명합니다. -->
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>현재 위치의 환경 데이터를 조회합니다.</string>
+<!-- Explain camera access for the AR visualization. -->
+<!-- AR 시각화를 위한 카메라 접근 목적을 설명합니다. -->
 <key>NSCameraUsageDescription</key>
 <string>환경 데이터를 주변 AR 공간에 표시합니다.</string>

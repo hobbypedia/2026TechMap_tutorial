@@ -1,5 +1,6 @@
 import Foundation
 
+/// A shared five-level scale for presenting environmental readings.
 /// 환경 수치를 사용자에게 전달할 때 사용하는 공통 5단계 상태입니다.
 enum AirQualityLevel: CaseIterable, Equatable, Sendable {
     case veryGood
@@ -18,7 +19,9 @@ enum AirQualityLevel: CaseIterable, Equatable, Sendable {
         }
     }
 
+    /// Preserves the AirKorea PM2.5 forecast boundaries of 15, 35, and 75 µg/m³.
     /// 에어코리아 PM2.5 예보 경계(15/35/75㎍/㎥)를 유지합니다.
+    /// Splits only the official Good range (0–15) into 0–7 and 8–15 for the five-level UI.
     /// 공식 `좋음` 구간(0~15)만 5단계 UI를 위해 0~7과 8~15로 나눕니다.
     static func pm25(_ value: Double) -> Self {
         switch max(0, value) {
@@ -30,6 +33,7 @@ enum AirQualityLevel: CaseIterable, Equatable, Sendable {
         }
     }
 
+    /// Uses the Korea Meteorological Administration's five-level UV boundaries of 2, 5, 7, and 10.
     /// 기상청 자외선 지수의 5단계 경계(2/5/7/10)를 사용합니다.
     static func uvIndex(_ value: Double) -> Self {
         switch max(0, value) {

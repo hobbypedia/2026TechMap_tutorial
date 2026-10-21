@@ -2,6 +2,7 @@ import Metal
 import RealityKit
 import UIKit
 
+/// Creates airborne dust and ultraviolet energy objects to visualize environmental readings.
 /// 수치표 대신 공기 중 먼지와 자외선 에너지 오브젝트를 생성합니다.
 final class AirQualityEntityFactory {
     private lazy var uvSurfaceShader: CustomMaterial.SurfaceShader? = {
@@ -20,6 +21,7 @@ final class AirQualityEntityFactory {
         return CustomMaterial.SurfaceShader(named: "sunCoronaSurface", in: library)
     }()
 
+    /// Creates the complete environmental visualization.
     /// 환경 데이터 전체 시각화를 만듭니다.
     func makeVisualization(from snapshot: AirQualitySnapshot) -> Entity {
         let root = Entity()
@@ -28,6 +30,7 @@ final class AirQualityEntityFactory {
         return root
     }
 
+    /// Updates an existing root entity with new data.
     /// 기존 루트 엔티티를 새 데이터로 갱신합니다.
     func updateVisualization(root: Entity, with snapshot: AirQualitySnapshot) {
         root.children.forEach { $0.removeFromParent() }
@@ -47,6 +50,8 @@ final class AirQualityEntityFactory {
         let speed = AirQualityVisualizationMapper.visualWindSpeed(
             forMetersPerSecond: snapshot.windSpeed
         )
+        // Configure the emission volume, movement, and particle appearance before attaching the component.
+        // 컴포넌트를 연결하기 전에 방출 영역, 움직임, 파티클 모양을 설정합니다.
         var component = ParticleEmitterComponent()
         component.emitterShape = .sphere
         component.emitterShapeSize = [radius * 2, 1.6, radius * 2]
@@ -78,6 +83,7 @@ final class AirQualityEntityFactory {
         component.mainEmitter.color = .constant(
             .single(UIColor(red: 0.76, green: 0.58, blue: 0.25, alpha: 0.42))
         )
+        // Leaves image unset to use RealityKit's default circular particle texture.
         // image를 지정하지 않아 RealityKit의 기본 원형 파티클 텍스처를 사용합니다.
         emitterEntity.components.set(component)
         return emitterEntity
@@ -101,6 +107,7 @@ final class AirQualityEntityFactory {
         let centerHeight = sourceHeight - cos(tilt) * halfHeight
 
         for index in 0..<beamCount {
+            // Crosses two double-sided planes at right angles for visibility from all directions with less white overlap.
             // 양면 평면 두 장을 직각으로 교차해 모든 방향에서 보이면서 흰색 중첩은 줄입니다.
             let yaw = Float(index) * .pi / Float(beamCount)
             let yawRotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
@@ -126,6 +133,7 @@ final class AirQualityEntityFactory {
             group.addChild(corona)
         }
 
+        // Uses an invisible reference point for screen projection and lens flare placement.
         // 실제 원형 메시를 드러내지 않고 화면 투영과 렌즈 플레어 기준점으로만 사용합니다.
         let source = Entity()
         source.name = "SunSource"
@@ -135,6 +143,7 @@ final class AirQualityEntityFactory {
         return group
     }
 
+    /// The Metal surface shader uses UV coordinates to create warm sunlight with soft edges.
     /// Metal surface shader가 UV 좌표만으로 따뜻한 햇빛과 부드러운 가장자리를 만듭니다.
     private func makeUVMaterial(normalizedUV: Float, opacity: Float) -> any Material {
         guard let uvSurfaceShader,
@@ -156,6 +165,7 @@ final class AirQualityEntityFactory {
         return material
     }
 
+    /// Draws a sun disk, golden halo, and pointed corona rays on one billboard plane.
     /// 태양 원반, 금빛 헤일로와 뾰족한 코로나 광선을 하나의 빌보드 평면에 그립니다.
     private func makeSunCoronaMaterial(normalizedUV: Float) -> (any Material)? {
         guard let sunCoronaSurfaceShader,
